@@ -64,6 +64,8 @@ svg#map:active{cursor:grabbing}
 .notes{margin-top:28px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);font-size:.88rem;max-width:80ch}
 .notes p{margin:0 0 8px}
 .notes b{color:var(--ink);font-weight:600}
+.credit{margin:24px 0 0;color:var(--muted);font-size:.78rem;opacity:.8}
+.credit a{color:inherit;text-underline-offset:2px}
 
 .tip{position:fixed;z-index:10;pointer-events:none;background:var(--panel);color:var(--ink);border:1px solid var(--panel-line);border-radius:12px;box-shadow:0 10px 30px rgba(10,25,35,.22);padding:12px 14px 10px;width:max-content;max-width:min(480px,calc(100vw - 24px));opacity:0;transform:translateY(4px);transition:opacity .12s,transform .12s}
 .tip.on{opacity:1;transform:none}
@@ -137,6 +139,7 @@ svg#map:active{cursor:grabbing}
   <p><b>WHO columns</b> show what each country reported to WHO for 2024: whether the medicine is legally sold, its dispensing category (OTC or Rx) and whether its cost is reimbursed. WHO data describe legal status, not current stock, and may differ from retail findings.</p>
   <p>“Full set” means NRT, bupropion and at least one of varenicline or cytisine are all available.</p>
 </section>
+<p class="credit">Created and maintained by PhD, MD Uladzimir Pikirenia (<a href="mailto:pikireniauladzimir@gmail.com">pikireniauladzimir@gmail.com</a>)</p>
 </div>
 
 <div class="tip" id="tip" role="dialog" aria-live="polite"><button class="x" type="button" aria-label="Close">×</button><div class="body"></div></div>
