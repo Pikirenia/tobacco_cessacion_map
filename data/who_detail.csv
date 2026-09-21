@@ -1,0 +1,196 @@
+ISO3,Country,NRT WHO sold,NRT dispensing,NRT reimbursement,Varenicline WHO sold,Varenicline dispensing,Varenicline reimbursement,Cytisine WHO sold,Cytisine dispensing,Cytisine reimbursement,Bupropion WHO sold,Bupropion dispensing,Bupropion reimbursement,NRT in WHO essential medicines list
+AFG,Afghanistan,No,,,No,,,No,,,No,,,No
+AGO,Angola,No,,,No,,,,,,No,,,
+ALB,Albania,No,,,No,,,,,,No,,,No
+AND,Andorra,Yes,OTC,No,Yes,Rx,No,,,,Yes,Rx,No,No
+ARE,United Arab Emirates,Yes,OTC,Partially,Yes,Rx,Partially,No,,,Yes,Rx,No,No
+ARG,Argentina,Yes,OTC,No,Yes,Rx,Partially,No,,,Yes,Rx,Partially,Yes
+ARM,Armenia,Yes,OTC,Partially,Yes,Rx,No,Yes,OTC,No,Yes,Rx,No,Yes
+ATG,Antigua and Barbuda,No,,,No,,,No,,,No,,,No
+AUS,Australia,Yes,OTC,Partially,Yes,Rx,Partially,No,,,Yes,Rx,Partially,Yes
+AUT,Austria,Yes,OTC,No,Yes,Rx,No,Yes,OTC,No,No,,,No
+AZE,Azerbaijan,No,,,No,,,Yes,OTC,No,No,,,No
+BDI,Burundi,No,,,No,,,No,,,No,,,No
+BEL,Belgium,Yes,OTC,No,Yes,OTC,Partially,Yes,Rx,No,Yes,OTC,Partially,No
+BEN,Benin,No,,,No,,,No,,,No,,,No
+BFA,Burkina Faso,Yes,,No,No,,,No,,,Yes,,No,No
+BGD,Bangladesh,No,,,Yes,Rx,No,No,,,Yes,Rx,No,No
+BGR,Bulgaria,Yes,OTC,No,No,,,Yes,OTC,No,No,,,No
+BHR,Bahrain,Yes,OTC,Yes,Yes,Rx,No,No,,,Yes,Rx,No,Yes
+BHS,Bahamas,Yes,OTC,No,Yes,Rx,No,Yes,Rx,No,Yes,Rx,No,No
+BIH,Bosnia and Herzegovina,Yes,OTC,No,Yes,Rx,No,No,,,Yes,Rx,No,No
+BLR,Belarus,Yes,OTC,No,Yes,OTC,No,No,,,No,,,No
+BLZ,Belize,No,,,No,,,No,,,Yes,Rx,No,No
+BOL,Bolivia,No,,,No,,,No,,,No,,,No
+BRA,Brazil,Yes,OTC,Yes,No,,,No,,,Yes,Rx,Yes,Yes
+BRB,Barbados,No,,,No,,,No,,,No,,,Yes
+BRN,Brunei,Yes,OTC,Yes,Yes,Rx,Yes,No,,,No,,,Yes
+BTN,Bhutan,No,,,No,,,,,,No,,,
+BWA,Botswana,No,,,No,,,,,,No,,,
+CAF,Central African Republic,No,,,No,,,,,,No,,,No
+CAN,Canada,Yes,OTC,Yes,Yes,Rx,Yes,Yes,OTC,No,Yes,Rx,Yes,No
+CHE,Switzerland,Yes,OTC,No,Yes,Rx,No,No,,,Yes,Rx,Partially,No
+CHL,Chile,Yes,Rx,No,Yes,Rx,No,No,,,Yes,Rx,No,No
+CHN,China,Yes,OTC,No,Yes,Rx,No,No,,,Yes,Rx,No,No
+CIV,Côte d'Ivoire,No,,,No,,,No,,,No,,,No
+CMR,Cameroon,Yes,OTC,No,No,,,No,,,Yes,,No,No
+COD,Democratic Republic of the Congo,No,,,No,,,No,,,No,,,Yes
+COG,Republic of the Congo,Yes,OTC,No,Yes,Rx,No,No,,,Yes,Rx,No,No
+COK,Cook Islands,Yes,OTC,Yes,No,,,No,,,No,,,No
+COL,Colombia,Yes,OTC,Yes,Yes,Rx,Yes,No,,,Yes,Rx,Yes,Yes
+COM,Comoros,No,,,No,,,No,,,No,,,No
+CPV,Cabo Verde,No,,,No,,,No,,,No,,,No
+CRI,Costa Rica,Yes,OTC,Yes,Yes,Rx,Yes,No,,,Yes,Rx,Yes,No
+CUB,Cuba,No,,,No,,,No,,,No,,,No
+CYP,Cyprus,Yes,OTC,Yes,Yes,Rx,No,No,,,Yes,Rx,No,Yes
+CZE,Czechia,Yes,OTC,Partially,No,,,Yes,OTC,Partially,Yes,Rx,Partially,
+DEU,Germany,Yes,OTC,No,Yes,Rx,No,Yes,Rx,No,No,,,No
+DJI,Djibouti,No,,,No,,,No,,,No,,,No
+DMA,Dominica,No,,,No,,,,,,No,,,No
+DNK,Denmark,Yes,OTC,Partially,Yes,Rx,Partially,Yes,Rx,,Yes,Rx,Partially,No
+DOM,Dominican Republic,Yes,OTC,No,Yes,Rx,No,No,,,Yes,Rx,No,No
+DZA,Algeria,No,,,No,,,No,,,No,,,Yes
+ECU,Ecuador,No,,,No,,,No,,,Yes,Rx,No,No
+EGY,Egypt,No,,,No,,,No,,,No,,,No
+ERI,Eritrea,No,,,No,,,,,,No,,,No
+ESP,Spain,Yes,OTC,No,Yes,Rx,Partially,Yes,Rx,No,Yes,Rx,Partially,No
+EST,Estonia,Yes,OTC,No,Yes,Rx,No,No,,,Yes,Rx,No,No
+ETH,Ethiopia,Yes,Rx,Partially,No,,,,,,Yes,Rx,Partially,Yes
+FIN,Finland,Yes,OTC,No,Yes,Rx,Partially,No,,,Yes,Rx,No,No
+FJI,Fiji,No,,,No,,,No,,,No,,,No
+FRA,France,Yes,OTC,Partially,Yes,Rx,Partially,No,,,Yes,Rx,No,Yes
+FSM,Federated States of Micronesia,Yes,,No,No,,,No,,,No,,,No
+GAB,Gabon,No,,,No,,,No,,,No,,,No
+GBR,United Kingdom,Yes,OTC,Partially,Yes,Rx,Partially,Yes,Rx,Partially,Yes,Rx,Partially,
+GEO,Georgia,Yes,OTC,No,Yes,OTC,No,Yes,OTC,No,Yes,Rx,No,No
+GHA,Ghana,No,,,No,,,No,,,No,,,No
+GIN,Guinea,No,,,No,,,,,,No,,,No
+GMB,Gambia,No,,,No,,,No,,,No,,,No
+GNB,Guinea-Bissau,No,,,No,,,No,,,No,,,No
+GNQ,Equatorial Guinea,No,,,No,,,,,,No,,,
+GRC,Greece,Yes,OTC,No,No,,,Yes,OTC,,No,,,No
+GRD,Grenada,No,,,No,,,No,,,No,,,No
+GTM,Guatemala,No,,,No,,,No,,,No,,,No
+GUY,Guyana,Yes,Rx,Yes,No,,,No,,,Yes,Rx,Yes,Yes
+HND,Honduras,No,,,No,,,No,,,Yes,Rx,No,No
+HRV,Croatia,Yes,OTC,No,Yes,Rx,No,No,,,Yes,Rx,Partially,No
+HTI,Haiti,No,,,No,,,,,,No,,,No
+HUN,Hungary,Yes,OTC,No,Yes,Rx,No,Yes,Rx,No,No,,,No
+IDN,Indonesia,Yes,OTC,No,No,,,No,,,No,,,No
+IND,India,Yes,OTC,Yes,Yes,Rx,No,No,,,Yes,Rx,No,Yes
+IRL,Ireland,Yes,OTC,Partially,Yes,Rx,Partially,Yes,Rx,,Yes,Rx,Partially,Yes
+IRN,Iran,Yes,OTC,No,Yes,Rx,Partially,No,,,Yes,Rx,Partially,Yes
+IRQ,Iraq,No,,,No,,,No,,,No,,,Yes
+ISL,Iceland,Yes,OTC,No,Yes,Rx,No,No,,,Yes,Rx,No,Yes
+ISR,Israel,Yes,OTC,Partially,Yes,Rx,Partially,,,,Yes,Rx,Partially,No
+ITA,Italy,Yes,OTC,No,Yes,Rx,Partially,Yes,Rx,No,Yes,Rx,No,No
+JAM,Jamaica,Yes,Rx,Yes,Yes,Rx,No,No,,,Yes,Rx,Yes,Yes
+JOR,Jordan,Yes,OTC,Yes,Yes,Rx,Yes,No,,,No,,,Yes
+JPN,Japan,Yes,OTC,Partially,Yes,Rx,Partially,No,,,No,,,Yes
+KAZ,Kazakhstan,Yes,OTC,No,Yes,Rx,No,Yes,OTC,No,Yes,Rx,No,No
+KEN,Kenya,No,,,No,,,,,,No,,,Yes
+KGZ,Kyrgyzstan,No,,,Yes,OTC,No,,,,No,,,No
+KHM,Cambodia,No,,,No,,,No,,,No,,,No
+KIR,Kiribati,No,,,No,,,No,,,No,,,No
+KNA,Saint Kitts and Nevis,No,,,No,,,No,,,No,,,No
+KOR,South Korea,Yes,OTC,Yes,Yes,Rx,Yes,No,,,Yes,Rx,Yes,No
+KWT,Kuwait,Yes,OTC,Yes,Yes,Rx,No,No,,,No,,,Yes
+LAO,Laos,No,,,No,,,No,,,No,,,No
+LBN,Lebanon,No,,,No,,,No,,,No,,,No
+LBR,Liberia,No,,,No,,,,,,No,,,No
+LBY,Libya,No,,,No,,,No,,,No,,,No
+LCA,Saint Lucia,Yes,OTC,Yes,No,,,No,,,Yes,,No,No
+LKA,Sri Lanka,No,,,No,,,,,,No,,,No
+LSO,Lesotho,No,,,No,,,No,,,No,,,No
+LTU,Lithuania,Yes,OTC,Partially,Yes,Rx,No,Yes,OTC,No,Yes,Rx,No,No
+LUX,Luxembourg,Yes,OTC,Partially,Yes,Rx,Partially,No,,,Yes,Rx,Partially,Yes
+LVA,Latvia,Yes,OTC,No,Yes,Rx,No,Yes,OTC,No,No,,,Yes
+MAR,Morocco,Yes,Rx,No,Yes,Rx,No,No,,,Yes,Rx,No,No
+MCO,Monaco,Yes,OTC,Yes,Yes,Rx,Partially,No,,,Yes,Rx,No,No
+MDA,Moldova,No,,,No,,,Yes,OTC,No,No,,,No
+MDG,Madagascar,Yes,OTC,Partially,Yes,Rx,Partially,No,,,Yes,Rx,Partially,Yes
+MDV,Maldives,Yes,Rx,Yes,No,,,,,,No,,,Yes
+MEX,Mexico,Yes,OTC,Partially,Yes,Rx,Partially,No,,,Yes,Rx,Partially,Yes
+MHL,Marshall Islands,No,,,No,,,,,,No,,,Yes
+MKD,North Macedonia,Yes,OTC,No,No,,,Yes,OTC,No,No,,,No
+MLI,Mali,No,,,No,,,No,,,No,,,No
+MLT,Malta,Yes,OTC,No,Yes,Rx,No,Yes,Rx,,Yes,Rx,No,No
+MMR,Myanmar,No,,,No,,,No,,,No,,,No
+MNE,Montenegro,No,,,No,,,No,,,No,,,No
+MNG,Mongolia,Yes,OTC,No,No,,,Yes,OTC,No,No,,,Yes
+MOZ,Mozambique,No,,,No,,,No,,,Yes,,Partially,
+MRT,Mauritania,No,,,No,,,No,,,No,,,No
+MUS,Mauritius,Yes,OTC,Yes,No,,,No,,,Yes,Rx,Yes,No
+MWI,Malawi,No,,,No,,,,,,No,,,No
+MYS,Malaysia,Yes,OTC,Yes,Yes,Rx,Yes,No,,,No,,,Yes
+NAM,Namibia,Yes,OTC,No,No,,,No,,,No,,,
+NER,Niger,No,,,No,,,No,,,No,,,No
+NGA,Nigeria,Yes,OTC,Partially,Yes,OTC,Partially,No,,,Yes,OTC,Partially,No
+NIC,Nicaragua,,,,,,,,,,,,,
+NIU,Niue,Yes,OTC,Yes,No,,,No,,,No,,,No
+NLD,Netherlands,Yes,OTC,Partially,Yes,Rx,Partially,Yes,Rx,,Yes,Rx,Partially,Yes
+NOR,Norway,Yes,OTC,No,Yes,Rx,No,No,,,Yes,Rx,No,No
+NPL,Nepal,No,,,No,,,No,,,No,,,Yes
+NRU,Nauru,No,,,No,,,No,,,No,,,No
+NZL,New Zealand,Yes,OTC,Yes,Yes,Rx,Yes,No,,,Yes,Rx,Yes,Yes
+OMN,Oman,Yes,OTC,No,Yes,Rx,No,No,,,Yes,Rx,No,No
+PAK,Pakistan,Yes,,No,Yes,Rx,No,No,,,Yes,,No,No
+PAN,Panama,No,,,No,,,No,,,Yes,Rx,Yes,Yes
+PER,Peru,Yes,Rx,No,Yes,Rx,Yes,No,,,Yes,Rx,Yes,No
+PHL,Philippines,Yes,Rx,No,Yes,Rx,No,No,,,Yes,,No,Yes
+PLW,Palau,Yes,OTC,Partially,Yes,Rx,Partially,No,,,Yes,Rx,Partially,No
+PNG,Papua New Guinea,No,,,No,,,No,,,No,,,No
+POL,Poland,Yes,OTC,No,Yes,Rx,No,Yes,Rx,,Yes,Rx,No,No
+PRK,North Korea,Yes,Rx,Partially,No,,,No,,,No,,,
+PRT,Portugal,Yes,OTC,No,Yes,Rx,Partially,Yes,OTC,No,Yes,Rx,Partially,No
+PRY,Paraguay,No,,,No,,,No,,,Yes,Rx,Yes,Yes
+PSE,Palestine,Yes,OTC,No,Yes,Rx,No,No,,,Yes,Rx,No,No
+QAT,Qatar,Yes,Rx,Yes,Yes,Rx,Yes,No,,,Yes,Rx,Yes,Yes
+ROU,Romania,Yes,OTC,Partially,Yes,Rx,No,Yes,OTC,,Yes,Rx,No,No
+RUS,Russia,Yes,OTC,No,Yes,Rx,No,Yes,OTC,No,No,,,No
+RWA,Rwanda,No,,,No,,,,,,No,,,No
+SAU,Saudi Arabia,Yes,OTC,Yes,Yes,Rx,Yes,No,,,Yes,Rx,Yes,Yes
+SDN,Sudan,No,,,No,,,No,,,No,,,No
+SEN,Senegal,Yes,Rx,Partially,No,,,No,,,No,,,No
+SGP,Singapore,Yes,OTC,Partially,Yes,Rx,No,No,,,Yes,Rx,No,No
+SLB,Solomon Islands,Yes,,No,No,,,No,,,No,,,No
+SLE,Sierra Leone,No,,,No,,,No,,,No,,,No
+SLV,El Salvador,Yes,Rx,Yes,No,,,No,,,Yes,Rx,Yes,No
+SMR,San Marino,No,,,No,,,,,,No,,,No
+SOM,Somalia,No,,,No,,,,,,No,,,No
+SRB,Serbia,Yes,OTC,No,No,,,Yes,OTC,No,Yes,Rx,No,No
+SSD,South Sudan,,,,,,,,,,,,,
+STP,São Tomé and Príncipe,No,,,No,,,No,,,No,,,No
+SUR,Suriname,Yes,OTC,No,Yes,Rx,No,No,,,Yes,Rx,No,Yes
+SVK,Slovakia,Yes,OTC,Partially,Yes,Rx,No,Yes,Rx,,No,,,No
+SVN,Slovenia,Yes,OTC,No,Yes,Rx,No,No,,,No,,,Yes
+SWE,Sweden,Yes,OTC,Partially,Yes,Rx,Partially,Yes,Rx,No,Yes,Rx,Partially,Yes
+SWZ,Swaziland,Yes,Rx,Yes,Yes,Rx,Yes,No,,,Yes,Rx,Yes,No
+SYC,Seychelles,Yes,OTC,Yes,No,,,No,,,Yes,Rx,Partially,No
+SYR,Syria,No,,,Yes,Rx,,No,,,Yes,Rx,,No
+TCD,Chad,Yes,OTC,No,No,,,No,,,No,,,No
+TGO,Togo,No,,,No,,,No,,,No,,,No
+THA,Thailand,Yes,OTC,No,Yes,Rx,No,Yes,Rx,,Yes,Rx,No,No
+TJK,Tajikistan,No,,,No,,,,,,No,,,Yes
+TKM,Turkmenistan,Yes,OTC,No,Yes,OTC,No,No,,,Yes,OTC,No,Yes
+TLS,East Timor,No,,,No,,,,,,No,,,Yes
+TON,Tonga,Yes,OTC,Partially,No,,,No,,,No,,,No
+TTO,Trinidad and Tobago,Yes,OTC,Yes,No,,,No,,,Yes,Rx,Yes,Yes
+TUN,Tunisia,Yes,Rx,Yes,No,,,No,,,No,,,No
+TUR,Turkey,Yes,OTC,Yes,Yes,Rx,Yes,Yes,Rx,Yes,Yes,Rx,Yes,Yes
+TUV,Tuvalu,No,,,No,,,No,,,No,,,No
+TZA,Tanzania,No,,,No,,,No,,,No,,,No
+UGA,Uganda,Yes,OTC,No,No,,,,,,No,,,No
+UKR,Ukraine,Yes,OTC,No,Yes,Rx,No,Yes,OTC,No,No,,,No
+URY,Uruguay,Yes,OTC,Yes,No,,,No,,,Yes,Rx,Yes,No
+USA,United States of America,Yes,OTC,Partially,Yes,Rx,Partially,No,,,Yes,Rx,Partially,No
+UZB,Uzbekistan,Yes,OTC,No,Yes,OTC,No,Yes,OTC,No,No,,,No
+VCT,Saint Vincent and the Grenadines,No,,,No,,,,,,No,,,No
+VEN,Venezuela,Yes,OTC,Yes,Yes,Rx,Yes,No,,,Yes,Rx,Yes,No
+VNM,Vietnam,Yes,OTC,No,No,,,No,,,No,,,No
+VUT,Vanuatu,Yes,OTC,No,Yes,,No,No,,,Yes,Rx,No,No
+WSM,Samoa,Yes,OTC,No,No,,,No,,,No,,,No
+YEM,Yemen,No,,,No,,,,,,No,,,No
+ZAF,South Africa,Yes,OTC,No,Yes,Rx,No,,,,Yes,Rx,No,No
+ZMB,Zambia,Yes,Rx,Partially,Yes,Rx,No,Yes,Rx,No,Yes,Rx,No,No
+ZWE,Zimbabwe,Yes,Rx,No,No,,,No,,,No,,,No
