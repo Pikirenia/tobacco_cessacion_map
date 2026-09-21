@@ -150,12 +150,13 @@ const DRUGS=["NRT","Varenicline","Cytisine","Bupropion"];
 const RET={A:"Available",U:"Unavailable",X:"Uncertain"};
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 function avail(d){return (d.r.match(/A/g)||[]).length}
+function fullSet(d){return d.r[0]==="A"&&d.r[3]==="A"&&(d.r[1]==="A"||d.r[2]==="A")}
 function klass(d,view){
   if(view==="all"){ if(d.r==="XXXX") return "nd"; return "c"+avail(d); }
   const s=d.r[+view]; return s==="A"?"c4":s==="U"?"c0":"nd";
 }
 function fillFor(k){return k==="nd"?css("--nodata"):css("--"+k)}
-const LEG_ALL=[["c4","All 4 available"],["c3","3 available"],["c2","2 available"],["c1","1 available"],["c0","None available"],["nd","No data"]];
+const LEG_ALL=[["c4","All 4 available"],["full","Full set"],["c3","3 available"],["c2","2 available"],["c1","1 available"],["c0","None available"],["nd","No data"]];
 const LEG_ONE=[["c4","Available"],["c0","Unavailable"],["nd","Uncertain / no data"]];
 
 let view="all", focusClass=null;
@@ -179,18 +180,20 @@ function paint(){
     const d=DATA[f.id]; const el=d3.select(this);
     if(!d){el.attr("style",null);return}
     const c=klass(d,view);
-    el.style("fill",fillFor(c)).classed("nd",c==="nd").classed("dim",focusClass&&c!==focusClass);
+    const dimmed=focusClass&&(focusClass==="full"?!fullSet(d):c!==focusClass);
+    el.style("fill",fillFor(c)).classed("nd",c==="nd").classed("dim",dimmed);
   });
   dots.each(function(o){
     const d=DATA[o.id], c=klass(d,view);
-    d3.select(this).style("fill",fillFor(c)).classed("nd",c==="nd").classed("dim",focusClass&&c!==focusClass);
+    const dimmed=focusClass&&(focusClass==="full"?!fullSet(d):c!==focusClass);
+    d3.select(this).style("fill",fillFor(c)).classed("nd",c==="nd").classed("dim",dimmed);
   });
-  const counts={}; Object.values(DATA).forEach(d=>{const c=klass(d,view);counts[c]=(counts[c]||0)+1});
+  const counts={full:0}; Object.values(DATA).forEach(d=>{const c=klass(d,view);counts[c]=(counts[c]||0)+1;if(fullSet(d))counts.full++});
   const ul=d3.select("#legend"); ul.selectAll("*").remove();
   leg.forEach(([c,label])=>{
     const b=ul.append("li").append("button").attr("type","button").attr("aria-pressed",focusClass===c)
       .on("click",()=>{focusClass=focusClass===c?null:c;paint()});
-    b.append("span").attr("class","sw").style("background",fillFor(c));
+    b.append("span").attr("class","sw").style("background",c==="full"?"linear-gradient(135deg, var(--c3) 0 50%, var(--c4) 50% 100%)":fillFor(c));
     b.append("span").text(label);
     b.append("span").attr("class","n").text(counts[c]||0);
   });
@@ -216,7 +219,7 @@ function html(d){
   const n=avail(d), c=klass(d,"all");
   const pillTxt=d.r==="XXXX"?"No data":`${n} of 4 available`;
   const light=(c==="c2"||c==="nd");
-  const full=d.r[0]==="A"&&d.r[3]==="A"&&(d.r[1]==="A"||d.r[2]==="A");
+  const full=fullSet(d);
   let rows=DRUGS.map((nm,i)=>`<tr><td>${nm}</td><td>${statusDot(d.r[i])}</td><td>${v(d.s[i])}</td><td>${v(d.d[i])}</td><td>${v(d.m[i])}</td></tr>`).join("");
   return `<h2>${d.n}</h2>
   <div class="sum"><span class="pill${light?" light":""}" style="background:${fillFor(c)};${c==="nd"?"border:1px solid "+css("--nodata-stroke"):""}">${pillTxt}</span>${full?"Full set available":"Full set not available"}</div>
