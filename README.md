@@ -2,7 +2,7 @@
 
 Interactive world map showing how many of four first-line smoking cessation medicines — nicotine replacement therapy (NRT), varenicline, cytisine and bupropion — patients can actually obtain through legal retail in each of 195 countries, alongside what each country reported to WHO.
 
-**Live map:** https://USERNAME.github.io/REPOSITORY/
+**Live map:** https://pikirenia.github.io/tobacco_cessacion_map/
 
 ## What the map shows
 
