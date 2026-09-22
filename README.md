@@ -27,7 +27,13 @@ Interactive world map showing how many of four first-line smoking cessation medi
 
 ## Technical notes
 
-Single self-contained `index.html` (D3 v7, topojson-client; geometry from Natural Earth via world-atlas 50m). No build step.
+Static `index.html` (D3 v7, topojson-client; geometry from Natural Earth via world-atlas 50m), shared `assets/site.css` and unchanged map dataset in `data/map-data.js`. No build step.
+
+## Country feedback
+
+The map introduction links to `feedback/`. It uses the same country dataset and stylesheet. Submissions remain disabled until `GOOGLE_APPS_SCRIPT_URL` in `feedback/config.js` is configured.
+
+See [Apps Script setup and deployment](apps-script/README.md) for the private Google Sheet backend, anonymous deployment, confirmation protocol and acceptance checks. Run local checks with `node tests/feedback.test.cjs`.
 
 ## Citation
 
@@ -36,3 +42,4 @@ Single self-contained `index.html` (D3 v7, topojson-client; geometry from Natura
 ## Licence
 
 <!-- Choose a licence for code and data -->
+

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Country feedback | Smoking cessation medicines</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="feedback.css">
+<script src="../data/map-data.js" defer></script>
+<script src="config.js" defer></script>
+<script src="feedback.js" defer></script>
+</head>
+<body>
+<main class="wrap feedback-wrap">
+<a class="back-link" href="../">Back to map</a>
+<header class="intro">
+<h1>Help us keep the map accurate</h1>
+<p>If you know the current situation in your country, please tell us whether these smoking cessation medicines can be practically obtained by an ordinary consumer and whether a prescription is normally required.</p>
+<p>Responses will be reviewed before the public map is updated.</p>
+</header>
+<noscript><p class="status">Please enable JavaScript to use this form.</p></noscript>
+<p id="status" class="status" role="status" aria-live="polite">Loading form...</p>
+<form id="feedback-form" method="post" target="submission-frame" hidden>
+<p class="helper">Fields marked * are required. No name or email is needed. Please do not include personal or medical information. Responses are sent to the project owner's private Google Sheet.</p>
+<div class="field"><label for="country">Country *</label><select id="country" name="country" required><option value="">Select a country</option></select></div>
+<div id="medicines" class="medicine-grid"></div>
+<div class="field">
+<label for="comments">Additional information / comments (optional)</label>
+<p id="comments-help" class="helper">You can mention brand names, temporary shortages, regional differences, online availability, unusual access conditions, or any other relevant information.</p>
+<textarea id="comments" name="comments" maxlength="4000" rows="4" aria-describedby="comments-help"></textarea>
+</div>
+<div class="field">
+<label for="source">Source or link (optional)</label>
+<p id="source-help" class="helper">For example, a pharmacy website, medicines registry, regulator, or another source that may help us verify the information.</p>
+<input id="source" name="source" type="text" maxlength="1000" aria-describedby="source-help">
+</div>
+<div class="honeypot" aria-hidden="true"><label for="website">Leave this field empty</label><input type="text" id="website" name="website" tabindex="-1" autocomplete="off"></div>
+<input type="hidden" name="started_at">
+<input type="hidden" name="submission_id">
+<input type="hidden" name="response_token">
+<div class="actions"><button id="submit-button" type="submit" class="button-link primary">Submit feedback</button><a class="back-link" href="../">Return to map</a></div>
+</form>
+<section id="thank-you" class="thank-you" tabindex="-1" hidden aria-labelledby="thanks-title">
+<h2 id="thanks-title">Thank you for your feedback</h2>
+<p>Your information has been submitted and will be reviewed before the map is updated.</p>
+<p class="helper">Returning to the map in about 5 seconds...</p>
+<a class="button-link" href="../">Return to map now</a>
+</section>
+<iframe name="submission-frame" id="submission-frame" title="Feedback submission" hidden></iframe>
+<footer><p class="credit">Created and maintained by PhD, MD Uladzimir Pikirenia (<a href="mailto:pikireniauladzimir@gmail.com">pikireniauladzimir@gmail.com</a>)</p></footer>
+</main>
+</body>
+</html>
