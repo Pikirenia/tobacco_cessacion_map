@@ -1,6 +1,6 @@
 // Configure this in Apps Script, not in the public repository.
-const SPREADSHEET_ID = "PASTE_EXISTING_GOOGLE_SHEET_ID_HERE";
-const SHEET_NAME = "Country feedback";
+const SPREADSHEET_ID = "1h7MfwjVXrnyFIn61fcZLE3Ev1bqXbfhz3KPzt-s6yzM";
+const SHEET_NAME = "Smoking_cessation_feedback";
 const SITE_ORIGIN = "https://pikirenia.github.io";
 const COUNTRY_DATA_URL = "https://pikirenia.github.io/tobacco_cessacion_map/data/map-data.js";
 const MEDICINES = ["nrt", "varenicline", "cytisine", "bupropion"];
