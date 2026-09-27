@@ -8,6 +8,16 @@
   const access = [["otc", "Without prescription"], ["prescription", "Prescription required"], ["mixed", "Depends on product/formulation"], ["unknown", "Don't know"]];
   const randomId = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, "0")).join("");
   let pending = false, timer, attemptToken = "", lastPayload = "";
+  const openedAt = performance.now();
+  let lockedFields = [];
+  function lockFields() {
+    lockedFields = Array.from(form.querySelectorAll("input, select, textarea"), input => [input, input.disabled]);
+    lockedFields.forEach(([input]) => { input.disabled = true; });
+  }
+  function unlockFields() {
+    lockedFields.forEach(([input, disabled]) => { input.disabled = disabled; });
+    lockedFields = [];
+  }
   function message(text) {
     status.textContent = text;
     status.hidden = !text;
@@ -75,15 +85,17 @@
   function failed(text) {
     clearTimeout(timer);
     pending = false;
+    unlockFields();
     button.disabled = false;
     button.textContent = "Retry submission";
     form.removeAttribute("aria-busy");
     message(text);
   }
   form.addEventListener("submit", event => {
+    event.preventDefault();
     if (pending) { event.preventDefault(); return; }
     if (!form.reportValidity()) { event.preventDefault(); return; }
-    if (Date.now() - Number(form.elements.started_at.value) < 3000) {
+    if (performance.now() - openedAt < 3000) {
       event.preventDefault(); message("Please take a moment to check your answers, then submit."); return;
     }
     const payload = Array.from(new FormData(form)).filter(([key]) => !["submission_id", "response_token", "started_at"].includes(key));
@@ -99,7 +111,14 @@
     form.setAttribute("aria-busy", "true");
     message("Submitting your feedback...");
     timer = setTimeout(() => failed("We could not confirm submission. Your answers are still here. Please retry."), 45000);
-    // Allow native form POST into the iframe. An iframe load is NOT proof of success.
+    // Native submit serializes enabled controls synchronously before we lock them.
+    // An iframe load is NOT proof of success.
+    try { form.submit(); lockFields(); }
+    catch (error) { failed("Could not send your feedback. Please retry."); }
+  });
+  form.addEventListener("input", () => {
+    // After a timeout, editing answers invalidates acknowledgements for old answers.
+    if (!pending) attemptToken = "";
   });
   window.addEventListener("message", event => {
     const trusted = /^https:\/\/(?:[a-z0-9-]+-)?script\.googleusercontent\.com$/.test(event.origin) || event.origin === "https://script.google.com";

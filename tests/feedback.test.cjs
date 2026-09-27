@@ -9,14 +9,15 @@ const data = JSON.parse(dataSource.trim().match(/^const DATA = (.*);$/s)[1]);
 const names = Object.values(data).map(d => d.n);
 assert.equal(names.length, 195);
 assert.equal(new Set(names).size, 195);
-for (const file of ["feedback/feedback.js", "feedback/config.js", "apps-script/Code.gs", "data/map-data.js"]) {
+for (const file of ["assets/map.js", "data/world-topology.js", "feedback/feedback.js", "feedback/config.js", "apps-script/Code.gs", "data/map-data.js"]) {
   new vm.Script(fs.readFileSync(file, "utf8"), {filename: file});
 }
 const index = fs.readFileSync("index.html", "utf8");
 assert(index.includes('href="feedback/"'));
 assert(index.includes('src="data/map-data.js"'));
 assert(!index.includes("const DATA ="));
-assert(index.includes('["full","Full set"]'));
+assert(fs.readFileSync("assets/map.js", "utf8").includes('["full","Full set"]'));
+assert(!index.includes("const TOPO ="));
 const html = fs.readFileSync("feedback/index.html", "utf8");
 assert(html.includes('href="../"'));
 assert(html.includes('target="submission-frame"'));
@@ -75,12 +76,18 @@ for (const key of ["nrt", "varenicline", "cytisine", "bupropion"]) {
     }
   }
 }
-for (const patch of [{country:""}, {country:"Atlantis"}, {website:"spam"}, {started_at:String(Date.now())},
-  {started_at:String(Date.now()-90000000)}, {comments:"x".repeat(4001)}, {source:"x".repeat(1001)},
+for (const patch of [{country:""}, {country:"Atlantis"}, {website:"spam"}, {started_at:"not-a-timestamp"},
+  {comments:"x".repeat(4001)}, {source:"x".repeat(1001)},
   {nrt_availability:""}, {nrt_access:""}, {extra:"unexpected"}, {submission_id:"invalid"}]) reject({...valid(),...patch});
 const repeated = event(valid()); repeated.parameters.country.push("Germany");
 assert.throws(() => backend.validate_(repeated));
-const oversized = event(valid()); oversized.postData.length = 40001;
+// Incorrect client clocks must not reject legitimate feedback.
+for (const delta of [-90000000, 0, 90000000]) backend.validate_(event({...valid(), started_at:String(Date.now()+delta)}));
+const unicode = event({...valid(), comments:"中".repeat(4000), source:"中".repeat(1000)});
+unicode.postData.length = new URLSearchParams(unicode.parameter).toString().length;
+assert(unicode.postData.length > 40000);
+backend.validate_(unicode);
+const oversized = event(valid()); oversized.postData.length = 80001;
 assert.throws(() => backend.validate_(oversized));
 assert.equal(backend.safeText_("=IMPORTXML('x')"), "'=IMPORTXML('x')");
 assert.equal(backend.safeText_("normal"), "normal");
@@ -101,7 +108,7 @@ assert(releases >= 3);
 
 // Minimal DOM simulation for form state, native-post intent and acknowledgement handling.
 function frontend(configured=true) {
-  const ids = {}, handlers = {}, timers = new Map(); let timeId=0;
+  const ids = {}, handlers = {}, timers = new Map(); let timeId=0, clock=0;
   class Element {
     constructor(tag) {this.tag=tag;this.children=[];this.handlers={};this.disabled=false;this.hidden=false;this.value="";this.checked=false;this.required=false;}
     append(...nodes) {for(const n of nodes){if(typeof n==="object")n.parent=this;this.children.push(n);}}
@@ -110,7 +117,7 @@ function frontend(configured=true) {
     setAttribute(k,v) {this[k]=v;}
     removeAttribute(k) {delete this[k];}
     focus() {this.focused=true;}
-    querySelectorAll() {return walk(this).filter(n=>n.tag==="input");}
+    querySelectorAll(selector) {return walk(this).filter(n=>selector==="input" ? n.tag==="input" : n.name);}
     set id(value) {this._id=value;ids[value]=this;}
     get id() {return this._id;}
   }
@@ -133,11 +140,13 @@ function frontend(configured=true) {
   class FakeFormData extends Array {
     constructor(){super();for(const n of inputs())if(!disabled(n)&&(n.type!=="radio"||n.checked))this.push([n.name,n.value]);}
   }
+  form.posts=[];
+  form.submit=()=>form.posts.push(Array.from(new FakeFormData()));
   const context=vm.createContext({
     DATA:data, GOOGLE_APPS_SCRIPT_URL:configured?"https://script.google.com/macros/s/test/exec":"PLACEHOLDER",
     document:{getElementById:id=>ids[id],createElement:tag=>new Element(tag),createTextNode:t=>t},
     Option:class {constructor(t,v){this.text=t;this.value=v;this.children=[];}},
-    FormData:FakeFormData, crypto:require("node:crypto").webcrypto,
+    FormData:FakeFormData, crypto:require("node:crypto").webcrypto, performance:{now:()=>clock},
     setTimeout:(f,ms)=>{timers.set(++timeId,{f,ms});return timeId;},clearTimeout:id=>timers.delete(id),
     window:{addEventListener:(key,f)=>handlers[key]=f,location:{href:""}}
   });
@@ -149,7 +158,7 @@ function frontend(configured=true) {
     radio.parent.parent.parent.handlers.change();
   }
   function submit() {const e={prevented:false,preventDefault(){this.prevented=true;}};form.handlers.submit(e);return e;}
-  return {ids,form,context,handlers,timers,select,submit};
+  return {ids,form,context,handlers,timers,select,submit,advance:ms=>{clock+=ms;}};
 }
 let ui=frontend(false);
 assert(ui.ids["submit-button"].disabled);
@@ -165,8 +174,15 @@ assert.equal(ui.form.reportValidity(),true);
 ui.select("nrt","availability","available");
 assert.equal(ui.form.reportValidity(),false);
 ui.select("nrt","access","prescription");
-assert.equal(ui.submit().prevented,false);
 assert.equal(ui.submit().prevented,true);
+assert.equal(ui.form.posts.length,0,"Monotonic three-second minimum");
+ui.advance(10000);
+ui.submit();
+assert.equal(ui.form.posts.length,1);
+assert(ui.form.posts[0].some(([k,v])=>k==="nrt_access"&&v==="prescription"),"Serialize before locking");
+assert(ui.form.elements.comments.disabled,"Lock answers during native POST");
+assert.equal(ui.submit().prevented,true);
+assert.equal(ui.form.posts.length,1,"Double submit must not post twice");
 const submissionId=ui.form.elements.submission_id.value;
 const token=ui.form.elements.response_token.value;
 const acknowledgement={type:"country-feedback-result",token,ok:true};
@@ -176,6 +192,8 @@ const timeout=[...ui.timers.values()].find(t=>t.ms===45000);timeout.f();
 assert.equal(ui.ids["submit-button"].disabled,false);
 assert.equal(ui.form.hidden,false);
 assert.equal(ui.ids.country.value,"Poland");
+assert.equal(ui.form.elements.comments.disabled,false,"Restore answers on timeout");
+assert.equal(ui.ids['varenicline-access'].disabled,true,"Preserve unavailable state");
 ui.submit();
 assert.equal(ui.form.elements.submission_id.value,submissionId);
 ui.handlers.message({origin:"https://script.googleusercontent.com",data:acknowledgement});
@@ -187,4 +205,12 @@ assert.equal(ui.form.hidden,true);
 assert.equal(ui.ids["thank-you"].hidden,false);
 const redirect=[...ui.timers.values()].find(t=>t.ms===5000);assert(redirect);redirect.f();
 assert.equal(ui.context.window.location.href,"../");
+// Late success cannot hide answers edited after a timeout.
+const edited=frontend();edited.ids.country.value="Poland";edited.advance(10000);
+for(const key of ["nrt","varenicline","cytisine","bupropion"])edited.select(key,"availability","unavailable");
+edited.submit();const old=edited.form.elements.response_token.value;
+[...edited.timers.values()].find(t=>t.ms===45000).f();
+edited.form.elements.comments.value="Changed answer";edited.form.handlers.input();
+edited.handlers.message({origin:"https://script.googleusercontent.com",data:{type:"country-feedback-result",token:old,ok:true}});
+assert.equal(edited.form.hidden,false);
 console.log("PASS: 195 shared countries, paths, syntax, 60 availability/access combinations, malformed inputs, formula escaping, backend failures/deduplication, frontend required/disabled states, timeout/retry, origin/token checks, success and 5-second redirect.");

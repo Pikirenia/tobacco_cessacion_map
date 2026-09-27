@@ -1,4 +1,4 @@
-// Configure this in Apps Script, not in the public repository.
+// Keep these settings identical in the deployed Apps Script project.
 const SPREADSHEET_ID = "1h7MfwjVXrnyFIn61fcZLE3Ev1bqXbfhz3KPzt-s6yzM";
 const SHEET_NAME = "Smoking_cessation_feedback";
 const SITE_ORIGIN = "https://pikirenia.github.io";
@@ -45,7 +45,8 @@ function countryNames_() {
 }
 
 function validate_(e) {
-  if (!e || !e.postData || e.postData.length > 40000 ||
+  // URL encoding can expand one Unicode character to nine ASCII bytes.
+  if (!e || !e.postData || e.postData.length > 80000 ||
       !/^application\/x-www-form-urlencoded(?:;|$)/i.test(e.postData.type)) throw new Error("Invalid POST.");
   const p = e.parameter || {};
   const allowed = HEADERS.filter(k => k !== "submission_timestamp").concat(["started_at", "website", "response_token"]);
@@ -55,8 +56,8 @@ function validate_(e) {
   }
   if (!/^[a-f0-9]{32}$/.test(p.submission_id || "") || !/^[a-f0-9]{32}$/.test(p.response_token || "")) throw new Error("Invalid request ID.");
   if (!/^[0-9]{13}$/.test(p.started_at || "")) throw new Error("Invalid start time.");
-  const elapsed = Date.now() - Number(p.started_at);
-  if (elapsed < 3000 || elapsed > 86400000) throw new Error("Invalid submission timing.");
+  // Client clocks are untrusted and can be wrong. Completion time is checked
+  // with a monotonic clock in the browser; server timestamps are generated below.
   if ((p.website || "").trim()) throw new Error("Spam detected.");
   for (const key of MEDICINES) {
     const a = p[key + "_availability"], access = p[key + "_access"];

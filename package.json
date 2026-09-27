@@ -1,0 +1,12 @@
+{
+  "name": "smoking-cessation-map",
+  "private": true,
+  "scripts": {
+    "test": "node tests/feedback.test.cjs",
+    "test:browser": "playwright test",
+    "check:data": "python3 scripts/check-data.py"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0"
+  }
+}

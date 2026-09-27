@@ -12,7 +12,7 @@ No responses change the map automatically. Review responses before updating the 
    `Code.gs` into the editor, replacing only the default empty starter code.
    If the project already has scripts or a doPost function, use a separate Apps Script project instead.
 3. Replace `SPREADSHEET_ID` in the editor with your Sheet ID.
-   Leave `SHEET_NAME = "Country feedback"` or choose a new empty tab name.
+   Keep `SHEET_NAME = "Smoking_cessation_feedback"` for the existing destination.
    The script creates that tab and its headers, and refuses to overwrite incompatible headers.
    Leave SITE_ORIGIN and COUNTRY_DATA_URL as supplied for this site.
 4. Save. Select **setup** and click **Run**. Authorize this script to access your
@@ -26,7 +26,8 @@ No responses change the map automatically. Review responses before updating the 
 8. Replace the placeholder `GOOGLE_APPS_SCRIPT_URL` in `feedback/config.js`
    in this repository with that URL. Commit to main and wait for GitHub Pages.
    The endpoint is public by design. No API key, token, Sheet ID or other credentials
-   belong in the website config. Keep the real Sheet ID in Apps Script only.
+   belong in the website config. The backend Sheet ID identifies the destination,
+   but does not grant access; keep the Sheet's sharing permissions private.
 9. Open the feedback page in a signed-out/incognito browser. Submit a clearly
    labelled test. Confirm one row in the Sheet, then confirm the thank-you display
    and return to the map after about five seconds. Check a phone as well.
@@ -48,14 +49,25 @@ Success occurs only after a positive acknowledgement. No acknowledgement within
 45 seconds shows a retry option without clearing answers or redirecting. A late
 valid success is accepted until another attempt starts. Unchanged retries retain
 their submission ID and are deduplicated in the Sheet under a script lock.
-Changing answers creates a new ID. No personal information is stored in browser storage.
+Changing answers creates a new ID. Fields are locked only after native POST
+serialization, and restored on failure/timeout with their previous disabled states.
+Editing after a timeout invalidates a late acknowledgement for the old answers.
+No personal information is stored in browser storage.
 The server creates submission_timestamp in UTC; it does not trust a client timestamp.
-If the user's clock is badly wrong or a form has been open for over 24 hours,
-timing validation may reject it; reload and complete the form again.
+The browser checks a minimum three-second completion time using its monotonic
+clock. The backend validates the client timestamp's format but does not compare
+it with server time, so an incorrect device clock does not reject a response.
+The 80,000-byte POST limit allows the full 4,000/1,000-character text fields
+even when Unicode characters expand during form URL encoding.
+
+When applying this update, copy the updated Code.gs into the existing Apps Script
+project, preserving SPREADSHEET_ID and SHEET_NAME, then use **Deploy > Manage
+deployments > Edit > Version: New version > Deploy**. The endpoint and columns
+are unchanged. Updating GitHub alone does not update the deployed backend.
 
 ## Security and limitations
 
-The honeypot, minimum three-second completion time, strict enum/field/length and
+The honeypot, browser-only minimum completion time, strict server enum/field/length and
 country validation, rejection of repeated fields, formula escaping and locking
 are lightweight protection, not strong bot authentication. A determined bot can
 forge timing and call any public endpoint. There is no CAPTCHA or user tracking.
@@ -74,7 +86,8 @@ source Excel workbooks synchronized. This feature does not modify any availabili
 
 ## Checks
 
-Run `node tests/feedback.test.cjs` from the repository root.
+Run `node tests/feedback.test.cjs` and `python3 scripts/check-data.py` from the repository root.
+See the main README for desktop/mobile browser tests and GitHub Actions.
 Manual acceptance: map filters (including Full set), zoom, search, tooltips;
 map-to-form and return links; 320/375/640 px mobile layouts and desktop;
 keyboard/focus, light/dark mode; every required group; unavailable -> applicable
