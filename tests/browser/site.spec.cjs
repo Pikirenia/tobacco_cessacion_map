@@ -34,7 +34,8 @@ test('hover reuses the country card instead of rebuilding its content', async ({
   test.skip(info.project.name !== 'desktop', 'Mouse interaction');
   await page.goto('./');await expect(page.locator('#legend button')).toHaveCount(7);
   // Dispatch on an existing country to avoid brittle geographic screen coordinates.
-  const country=page.locator('.country:not(.out)').first();
+  // Hover raises the SVG path, so keep the same node rather than reselecting first().
+  const country=await page.locator('.country:not(.out)').first().elementHandle();
   await country.dispatchEvent('pointermove',{pointerType:'mouse',clientX:100,clientY:100});
   await expect(page.locator('#tip')).toHaveClass(/on/);
   const heading=await page.locator('#tip h2').elementHandle();
@@ -57,9 +58,9 @@ test('feedback is usable at narrow widths and in dark mode', async ({page}) => {
   await page.emulateMedia({colorScheme:'dark'});
   await expect(page.getByRole('heading',{name:'Help us keep the map accurate'})).toBeVisible();
   await page.locator('#nrt-availability').getByLabel('Not available',{exact:true}).check();
-  await expect(page.locator('#nrt-access')).toBeDisabled();
+  await expect(page.locator('#nrt-access input').first()).toBeDisabled();
   await page.locator('#nrt-availability').getByLabel('Available',{exact:true}).check();
-  await expect(page.locator('#nrt-access')).toBeEnabled();
+  await expect(page.locator('#nrt-access input').first()).toBeEnabled();
   expect(await page.locator('#nrt-access input').first().evaluate(el=>el.required)).toBe(true);
 });
 
