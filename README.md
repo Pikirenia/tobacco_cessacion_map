@@ -65,9 +65,22 @@ See [Apps Script setup and deployment](apps-script/README.md) for the private Go
 
 ## Citation
 
-<!-- Add citation / DOI once available -->
+Uladzimir Pikirenia. *Smoking cessation medicines*.
+https://pikirenia.github.io/tobacco_cessacion_map/
+
+For data reuse, include the [CC BY 4.0 licence](https://creativecommons.org/licenses/by/4.0/)
+and indicate any changes. Record the access date or commit when citing a specific
+version. See [attribution guidance](DATA_LICENSE.md#attribution).
 
 ## Licence
 
-<!-- Choose a licence for code and data -->
+- **Original software code:** [MIT License](LICENSE), copyright 2026 Uladzimir Pikirenia.
+- **Original data and narrative text:** [CC BY 4.0](DATA_LICENSE.md), allowing reuse
+  and adaptation, including commercially, with attribution.
+- **Third-party material:** retains its own terms; see [third-party notices](THIRD_PARTY_NOTICES.md).
 
+The MIT licence applies to the original HTML/CSS/JavaScript implementation,
+Apps Script backend, scripts, tests and software setup documentation. It does
+not replace the data and narrative-content licence, including for data embedded
+in JavaScript. Mixed-source CSV files and spreadsheets are covered by CC BY 4.0
+only for the author's original contributions, not third-party source material.
