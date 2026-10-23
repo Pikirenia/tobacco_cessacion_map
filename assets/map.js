@@ -53,7 +53,7 @@ function paint(){
   document.getElementById("tbControls").hidden=!isTB;
   const meta=document.getElementById("tbMeta");
   meta.hidden=!isTB;
-  meta.textContent=TB.year ? "WHO estimates for "+TB.year+" | Last synchronized: "+(TB.updated||"unknown").slice(0,10)
+  meta.textContent=TB.year ? "WHO estimates for "+TB.year+" | Snapshot created: "+(TB.updated||"unknown").slice(0,10)
     : "WHO estimates not yet synchronized. Data will appear after the first successful automated update.";
   svg.attr("aria-label",isTB?(mode==="tb-incidence"?"World map of estimated TB incidence per 100,000":"World map of estimated smoking-attributable tuberculosis cases"):"World map of smoking cessation medicine availability");
   const leg=isTB?TB_LEGENDS[mode]:(view==="all"?LEG_ALL:LEG_ONE);
