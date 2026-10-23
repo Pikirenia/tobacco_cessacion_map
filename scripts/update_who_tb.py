@@ -87,7 +87,7 @@ def smoking_by_year(rows):
     headers = set(rows[0])
     risk_key = next((key for key in ("risk_factor", "riskfactor") if key in headers), None)
     estimate_key = next((key for key in ("best", "value") if key in headers), None)
-    if not risk_key or not estimate_key or not {"iso3", "year", "sex", "age", "unit", "measure"}.issubset(headers):
+    if not risk_key or not estimate_key or not ({"age_group", "age"} & headers) or not {"iso3", "year", "sex", "unit", "measure"}.issubset(headers):
         raise ValueError("WHO risk-factor CSV schema changed: " + ", ".join(sorted(headers)))
     found = {}
     for row in rows:
@@ -100,7 +100,7 @@ def smoking_by_year(rows):
             continue
         if (row.get("sex") or "").strip().lower() not in ("a", "all", "both"):
             continue
-        if (row.get("age") or "").strip().lower() not in ("15+", "15plus", "15 plus", "a", "all"):
+        if (row.get("age_group") or row.get("age") or "").strip().lower() not in ("15+", "15plus", "15 plus"):
             continue
         iso, y, cases = country_code(row), year(row.get("year")), numerical(row.get(estimate_key))
         if iso and y and cases is not None:
