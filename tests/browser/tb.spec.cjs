@@ -5,7 +5,7 @@ test('TB modes use the WHO snapshot and retain medicines view', async ({page}) =
     contentType: 'application/javascript',
     body: 'const TB_DATA = {"year":2024,"updated":"2026-10-23T18:00:00Z","countries":{"POL":{"incidence":30.5,"smoking":1234}}};'
   }));
-  await page.goto('/');
+  await page.goto('./');
   await expect(page.locator('#medicineViews')).toBeVisible();
   await page.locator('.map-mode [data-mode="tb-incidence"]').click();
   await expect(page.locator('#medicineViews')).toBeHidden();
@@ -28,7 +28,7 @@ test('TB modes use the WHO snapshot and retain medicines view', async ({page}) =
 });
 
 test('missing TB estimates display No data, not zero', async ({page}) => {
-  await page.goto('/');
+  await page.goto('./');
   await page.locator('.map-mode [data-mode="tb-smoking"]').click();
   await expect(page.locator('#tbMeta')).toBeVisible();
   await page.locator('#q').fill('Poland');
