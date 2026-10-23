@@ -10,6 +10,7 @@ Interactive world map of legal retail availability of four smoking cessation med
 - **Tooltip** (hover or tap) — retail status per medicine, WHO "legally sold" status (2024), dispensing category (OTC/Rx), reimbursement, and inclusion of NRT in the national essential medicines list.
 - **Layer switch** — medicines, WHO TB incidence per 100,000, or WHO smoking-attributable TB cases. The original per-medicine availability views remain unchanged.
 - **Combined exploration** — in either TB layer, filter/highlight countries by retail availability of an individual medicine or the Full package; country tooltips display both TB measures and medicine availability.
+- **High-incidence medicine access comparison** — in the TB incidence layer switch "TB incidence display" to "Medicine access comparison", then select a strict threshold (>100, >200, or >400 per 100,000). Above-threshold countries are coloured dark green for Full package confirmed available, light green for at least one medicine confirmed available but no full package, red for Full package confirmed unavailable with none of the four medicines confirmed available, or grey for no confirmed medicine with unresolved package status. Countries at/below the threshold are muted and missing TB estimates remain distinct. Categories are disjoint: red does not absorb the partial-access group.
 
 ## Definitions
 
