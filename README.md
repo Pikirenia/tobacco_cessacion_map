@@ -1,6 +1,6 @@
-# Smoking cessation medicines — availability map
+# Smoking cessation medicines and tuberculosis
 
-Interactive world map showing how many of four first-line smoking cessation medicines — nicotine replacement therapy (NRT), varenicline, cytisine and bupropion — patients can actually obtain through legal retail in each of 195 countries, alongside what each country reported to WHO.
+Interactive world map of legal retail availability of four smoking cessation medicines (NRT, varenicline, cytisine and bupropion) in 195 countries, plus two WHO-modelled TB indicators: annual incidence per 100,000 population and estimated annual TB cases attributable to smoking.
 
 **Live map:** https://pikirenia.github.io/tobacco_cessacion_map/
 
@@ -8,7 +8,8 @@ Interactive world map showing how many of four first-line smoking cessation medi
 
 - **Colour** — number of medicines with confirmed retail availability (0–4). White: status of all four medicines is uncertain (no data). Grey: territories outside the 195-country study.
 - **Tooltip** (hover or tap) — retail status per medicine, WHO "legally sold" status (2024), dispensing category (OTC/Rx), reimbursement, and inclusion of NRT in the national essential medicines list.
-- **View switch** — all four medicines, or one medicine at a time.
+- **Layer switch** — medicines, WHO TB incidence per 100,000, or WHO smoking-attributable TB cases. The original per-medicine availability views remain unchanged.
+- **Combined exploration** — in either TB layer, filter/highlight countries by retail availability of an individual medicine; country tooltips display both TB measures and medicine availability.
 
 ## Definitions
 
@@ -25,10 +26,29 @@ Interactive world map showing how many of four first-line smoking cessation medi
 - `data/by_country.csv` — retail status and WHO "legally sold" status per country
 - `data/who_detail.csv` — WHO dispensing, reimbursement and essential medicines list fields
 
+## WHO tuberculosis estimates (automatically synchronized)
+
+The map includes precisely two additional WHO indicators:
+
+1. **TB incidence per 100,000 population:** WHO estimate of new and recurrent TB cases each year, including HIV-associated and drug-resistant TB.
+2. **Smoking-attributable TB cases:** WHO estimate of new TB episodes attributable to smoking, among adults aged 15 years and older, based on population attributable fractions. This is not a count of people with TB who smoke.
+
+The authoritative downloads are the WHO Global TB Programme's machine-generated CSV files:
+- https://extranet.who.int/tme/generateCSV.asp?ds=estimates
+- https://extranet.who.int/tme/generateCSV.asp?ds=estimates_age_sex
+
+`scripts/update_who_tb.py` uses Python's standard library to fetch and validate both files and selects the **latest common reference year** with adequate country coverage. It uses WHO's smoking risk-factor best estimate (sex=all, adult age group, incidence, unit=number), never calculates an attributable number from smokers among TB cases. Missing values are not replaced by zero or values from earlier years. Countries are matched using ISO3 codes to the existing 195-country map.
+
+The `Sync WHO tuberculosis estimates` GitHub Actions workflow runs on the first merge to `main`, weekly on Mondays, or manually via **Actions → Sync WHO tuberculosis estimates → Run workflow**. It refreshes `data/tb-data.js` only when an actual indicator changes. Failed downloads or changed schemas fail validation *without overwriting* the previous data file. Country medicine records and feedback forms are unaffected.
+
+Initially, the TB layers show No data until the first successful automated sync. The latest source year and last successful update date are displayed beneath the map. WHO routinely revises past-year estimates, so do not compare series from different report vintages without caution.
+
+Source: [WHO Global Tuberculosis Programme](https://www.who.int/teams/global-programme-on-tuberculosis-and-lung-health/data). WHO-derived material retains WHO's attribution and applicable [dataset terms](https://data.who.int/about/data/terms-and-conditions). No WHO endorsement is implied. This project's MIT code license and CC BY 4.0 license for original project content do not replace any applicable third-party rights.
+
 ## Technical notes
 
 Static `index.html`, `assets/map.js` (D3 v7, topojson-client), shared `assets/site.css`
-and map dataset in `data/map-data.js`. Unchanged Natural Earth/world-atlas 50m
+and map dataset in `data/map-data.js`; WHO TB estimates are independently generated in `data/tb-data.js`. Unchanged Natural Earth/world-atlas 50m
 geometry is in `data/world-topology.js`, cached independently of page edits.
 Scripts use `defer` and execute in dependency order. No production build step or new runtime dependencies.
 
@@ -48,7 +68,7 @@ from the reviewed workbook. It preserves map IDs and island coordinates and
 never edits Excel. Adding/removing countries requires explicit geography review.
 Commit the source workbook and regenerated files together after reviewing the diff.
 
-Run `npm ci`, `npm test`, and `npm run check:data` for local checks.
+Run `npm ci`, `npm test`, and `npm run check:data` for local checks. WHO parser regression tests can also be run directly with `python3 -m unittest discover -s tests -p 'test_who_tb.py'`.
 For real browser checks, run `npx playwright install --with-deps chromium webkit`
 then `npm run test:browser`. Playwright is a development-only dependency.
 Tests serve the site under `/tobacco_cessacion_map/`, exercise desktop/mobile
