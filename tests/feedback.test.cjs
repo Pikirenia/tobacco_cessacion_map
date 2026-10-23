@@ -26,7 +26,7 @@ for (const source of [index, html]) {
   for (const [, url] of source.matchAll(/(?:src|href)="([^"]+)"/g)) {
     if (/^(https?:|mailto:|#)/.test(url)) continue;
     const base = source === index ? "." : "feedback";
-    assert(fs.existsSync(path.resolve(base, url)), "Missing relative path: " + url);
+    assert(fs.existsSync(path.resolve(base, url.split(/[?#]/, 1)[0])), "Missing relative path: " + url);
   }
 }
 const rows = [];
