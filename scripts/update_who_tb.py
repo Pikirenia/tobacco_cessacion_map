@@ -92,7 +92,7 @@ def smoking_by_year(rows):
     found = {}
     for row in rows:
         rf = (row.get(risk_key) or "").strip().lower()
-        if rf not in ("smoking", "tobacco smoking"):
+        if rf not in ("smk", "smoking", "tobacco smoking"):
             continue
         if (row.get("unit") or "").strip().lower() not in ("num", "number"):
             continue
@@ -153,13 +153,6 @@ def main():
     incidence_rows = download_csv(COUNTRY_SOURCE)
     risk_rows = download_csv(RISK_SOURCE)
     print("WHO incidence input rows:", len(incidence_rows), "risk input rows:", len(risk_rows), flush=True)
-    sample = [r for r in risk_rows if "smok" in str(r.get("risk_factor", "")).lower()][:4]
-    from collections import Counter
-    print("WHO risk_factor values:", Counter(r.get("risk_factor") for r in risk_rows).most_common(20), flush=True)
-    print("WHO risk file sample:", risk_rows[:2], flush=True)
-    print("WHO smoking rows, sample dimensions:",
-          [{k: r.get(k) for k in ("year", "risk_factor", "age_group", "sex", "measure", "unit", "best")} for r in sample],
-          flush=True)
     result = build(incidence_rows, risk_rows, allowed)
     result["updated"] = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     result["source"] = "WHO Global Tuberculosis Programme"
