@@ -26,7 +26,7 @@ class WhoTBTests(unittest.TestCase):
         ]
         def row(iso,risk,best,year="2024",sex="a",age="15+"):
             return {"iso3":iso,"year":year,"risk_factor":risk,"measure":"inc",
-                    "unit":"num","sex":sex,"age":age,"best":best}
+                    "unit":"num","sex":sex,"age_group":age,"best":best}
         risk = [
             row("POL","smoking","340.2"),
             row("BLR","smoking","680.9"),
@@ -43,7 +43,7 @@ class WhoTBTests(unittest.TestCase):
 
     def test_ambiguous_smoking_is_rejected(self):
         records = [{"iso3":"POL","year":"2024","risk_factor":"smoking","measure":"inc",
-                    "unit":"num","sex":"a","age":"15+","best":n} for n in ("40","90")]
+                    "unit":"num","sex":"a","age_group":"15plus","best":n} for n in ("40","90")]
         with self.assertRaises(ValueError):
             tb.smoking_by_year(records)
 
@@ -52,7 +52,7 @@ class WhoTBTests(unittest.TestCase):
             tb.smoking_by_year([{"iso3":"POL"}])
         inc = [{"iso3":"POL","year":"2024","e_inc_100k":"12"}]
         risk = [{"iso3":"POL","year":"2024","risk_factor":"smoking","measure":"inc",
-                 "unit":"num","sex":"a","age":"15+","best":"20"}]
+                 "unit":"num","sex":"a","age_group":"15plus","best":"20"}]
         with self.assertRaises(ValueError):
             tb.build(inc,risk,{"POL","BLR"})
 
