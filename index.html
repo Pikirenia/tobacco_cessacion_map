@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/site.css?v=tb-incidence-access-1">
+<link rel="stylesheet" href="assets/site.css?v=tb-access-count-colors-1">
 </head>
 <body>
 <div class="wrap">
@@ -86,7 +86,7 @@
   <p><b>WHO columns</b> show what each country reported to WHO for 2024: whether the medicine is legally sold, its dispensing category (OTC or Rx) and whether its cost is reimbursed. WHO data describe legal status, not current stock, and may differ from retail findings.</p>
   <p>“Full package” means NRT, bupropion and at least one of varenicline or cytisine are all available. A package is unavailable only when at least one required component is confirmed unavailable; otherwise it may be uncertain.</p>
   <p><b>Tuberculosis layers</b> display WHO modelled annual estimates, not notified case counts. TB incidence is expressed per 100,000 people. Smoking-attributable TB is the estimated annual number of incident cases attributable to smoking among adults (aged 15+), not the number of patients with TB who smoke. Risk factors may overlap. All TB estimates on the map use the latest common reference year available from both WHO CSV sources. Missing data are not interpreted as zero.</p>
-  <p><b>TB incidence + medicine access comparison:</b> Among countries strictly above the selected incidence threshold, dark green means the full package is available, light green means at least one medicine is confirmed available but the full package is not, and red means the full package is confirmed unavailable with no medicine confirmed available. Grey means no medicine has confirmed availability and the package status cannot be established. Countries below or equal to the threshold are muted; countries without TB incidence data are marked separately. These mutually exclusive groups avoid interpreting unknown availability as confirmed absence.</p>
+  <p><b>TB incidence + medicine access comparison:</b> For countries strictly above the chosen incidence threshold, red means zero medicines confirmed available, light green means exactly one available, green means two or three available but not the full package, and dark green means the full package is available (NRT + bupropion + varenicline or cytisine). Zero confirmed available does not necessarily mean confirmed unavailability: individual medicine statuses may be uncertain. Countries at or below the threshold are muted, and missing TB incidence data remain separate.</p>
   <p><b>WHO TB sources:</b> <a href="https://extranet.who.int/tme/generateCSV.asp?ds=estimates">TB burden estimates</a> and <a href="https://extranet.who.int/tme/generateCSV.asp?ds=estimates_age_sex">incidence disaggregated by risk factors</a>. <a href="https://www.who.int/teams/global-programme-on-tuberculosis-and-lung-health/data">WHO documentation and terms</a>. Estimates are synchronized automatically and may be retrospectively revised.</p>
 </section>
 <p class="credit">Created and maintained by PhD, MD Uladzimir Pikirenia (<a href="mailto:pikireniauladzimir@gmail.com">pikireniauladzimir@gmail.com</a>)</p>
@@ -100,6 +100,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js" defer></script>
 <script src="data/world-topology.js" defer></script>
-<script src="assets/map.js?v=tb-incidence-access-1" defer></script>
+<script src="assets/map.js?v=tb-access-count-colors-1" defer></script>
 </body>
 </html>

@@ -13,20 +13,23 @@ function tbClass(d){
   return "tb"+breaks.filter(limit=>x>=limit).length;
 }
 function num(x){return Number.isFinite(x)?x.toLocaleString("en-US",{maximumFractionDigits:2}):"No data";}
-// The comparison categories are mutually exclusive and never treat uncertain as unavailable.
+// Comparison counts only confirmed retail availability (status A).
+// "0 confirmed" may include uncertain medicines; it does not imply all four are unavailable.
 function tbAccessClass(d){
   const x=TB.countries && TB.countries[d.i] && TB.countries[d.i].incidence;
   if(!Number.isFinite(x)) return "nd";
   if(x<=tbCutoff) return "acc-below";
   if(fullSet(d)) return "acc-full";
-  if(avail(d)>0) return "acc-partial";
-  return fullPackageStatus(d)==="U" ? "acc-none" : "acc-uncertain";
+  const count=avail(d);
+  if(count>=2) return "acc-two";
+  if(count===1) return "acc-one";
+  return "acc-none";
 }
 const LEG_TB_ACCESS=[
+  ["acc-none","0 confirmed available"],
+  ["acc-one","1 medicine available"],
+  ["acc-two","2+ medicines, no full package"],
   ["acc-full","Full package available"],
-  ["acc-partial","At least 1 medicine available"],
-  ["acc-none","Full package unavailable, none confirmed available"],
-  ["acc-uncertain","No confirmed availability, uncertain"],
   ["acc-below","Incidence ≤ threshold"],
   ["nd","No TB incidence data"]
 ];
@@ -34,7 +37,7 @@ const LEG_TB_ACCESS=[
 let palette={};
 function refreshPalette(){
   const style=getComputedStyle(document.documentElement);
-  for(const name of ["--nodata","--nodata-stroke","--c0","--c1","--c2","--c3","--c4","--tb0","--tb1","--tb2","--tb3","--tb4","--tb5","--acc-full","--acc-partial","--acc-none","--acc-uncertain","--acc-below"])
+  for(const name of ["--nodata","--nodata-stroke","--c0","--c1","--c2","--c3","--c4","--tb0","--tb1","--tb2","--tb3","--tb4","--tb5","--acc-full","--acc-one","--acc-two","--acc-none","--acc-below"])
     palette[name]=style.getPropertyValue(name).trim();
 }
 const css=n=>palette[n];
@@ -152,9 +155,9 @@ function html(d){
   const comparisonText=comparison?'<div class="foot">Incidence threshold: &gt;'+tbCutoff+
     ' per 100,000. Comparison category: '+({
       "acc-full":"Full package available",
-      "acc-partial":"At least one medicine available; full package not confirmed",
-      "acc-none":"Full package unavailable; no medicine confirmed available",
-      "acc-uncertain":"No medicine confirmed available; evidence incomplete",
+      "acc-two":"Two or three medicines available, but no full package",
+      "acc-one":"One medicine confirmed available",
+      "acc-none":"Zero medicines confirmed available (some statuses may be uncertain)",
       "acc-below":"Below or equal to incidence threshold",
       "nd":"TB incidence data unavailable"
     }[tbAccessClass(d)])+'</div>':'';

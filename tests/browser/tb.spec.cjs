@@ -132,6 +132,9 @@ test('TB incidence thresholds compare full, partial and unavailable medicine acc
   await expect(page.locator('#tbCutoff')).toBeVisible();
   await expect(page.locator('#tbCutoff')).toHaveValue('100');
   await expect(page.locator('#legend button')).toHaveCount(6);
+  await expect(page.locator('#legend')).toContainText('0 confirmed available');
+  await expect(page.locator('#legend')).toContainText('1 medicine available');
+  await expect(page.locator('#legend')).toContainText('2+ medicines, no full package');
 
   const category = async iso => page.evaluate(code => {
     const entry = [...document.querySelectorAll('#map path.country')].find(el => {
@@ -146,18 +149,31 @@ test('TB incidence thresholds compare full, partial and unavailable medicine acc
     };
   },iso);
   const full=await category('POL'), partial=await category('BLR'), absent=await category('ZWE');
-  const uncertain=await category('AFG'), boundary=await category('DEU');
+  const noConfirmation=await category('AFG'), boundary=await category('DEU');
   expect(full.classKey).toBe('acc-full');
-  expect(partial.classKey).toBe('acc-partial');
+  expect(partial.classKey).toBe('acc-one');
   expect(absent.classKey).toBe('acc-none');
-  expect(uncertain.classKey).toBe('acc-uncertain');
+  expect(noConfirmation.classKey).toBe('acc-none'); // XXXX: no confirmed availability, not proven unavailable
   expect(boundary.classKey).toBe('acc-below'); // strictly greater than 100
-  expect(new Set([full.color,partial.color,absent.color,uncertain.color,boundary.color]).size).toBe(5);
+  expect(new Set([full.color,partial.color,absent.color,boundary.color]).size).toBe(4);
+  const synthetic = await page.evaluate(() => ({
+    two:tbAccessClass({i:'AFG',r:'AAUX'}),
+    three:tbAccessClass({i:'AFG',r:'AAAU'}),
+    one:tbAccessClass({i:'AFG',r:'UUAX'}),
+    zero:tbAccessClass({i:'AFG',r:'XXXX'}),
+    full:tbAccessClass({i:'AFG',r:'AAAA'})
+  }));
+  expect(synthetic).toEqual({two:'acc-two',three:'acc-two',one:'acc-one',zero:'acc-none',full:'acc-full'});
+  const colors = await page.evaluate(() => {
+    const cs=getComputedStyle(document.documentElement);
+    return ['--acc-none','--acc-one','--acc-two','--acc-full'].map(key=>cs.getPropertyValue(key).trim());
+  });
+  expect(new Set(colors).size).toBe(4);
   expect(full.dimmed).toBe(false);
   await expect(page.locator('#tbMeta')).toContainText('>100');
   await page.locator('#tbCutoff').selectOption('200');
   expect((await category('POL')).classKey).toBe('acc-below');
-  expect((await category('BLR')).classKey).toBe('acc-partial');
+  expect((await category('BLR')).classKey).toBe('acc-one');
   await page.locator('#tbCutoff').selectOption('400');
   expect((await category('BLR')).classKey).toBe('acc-below');
   expect((await category('ZWE')).classKey).toBe('acc-none');
@@ -165,7 +181,7 @@ test('TB incidence thresholds compare full, partial and unavailable medicine acc
 
   await page.locator('#q').fill('Zimbabwe');
   await page.locator('#q').dispatchEvent('change');
-  await expect(page.locator('.tip.on')).toContainText('Full package unavailable; no medicine confirmed available');
+  await expect(page.locator('.tip.on')).toContainText('Zero medicines confirmed available');
   await page.locator('#tbColorBy').selectOption('rate');
   await expect(page.locator('#tbControls')).toBeVisible();
   await expect(page.locator('#tbCutoff')).toBeHidden();
