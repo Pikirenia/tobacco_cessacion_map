@@ -1,9 +1,23 @@
 const DRUGS=["NRT","Varenicline","Cytisine","Bupropion"];
 const RET={A:"Available",U:"Unavailable",X:"Uncertain"};
+const TB=typeof TB_DATA!=="undefined" ? TB_DATA : {year:null,updated:null,countries:{}};
+const TB_LEGENDS={
+  "tb-incidence":[["tb0","<10"],["tb1","10–49"],["tb2","50–99"],["tb3","100–199"],["tb4","200–399"],["tb5","≥400"],["nd","No data"]],
+  "tb-smoking":[["tb0","0"],["tb1","1–99"],["tb2","100–999"],["tb3","1,000–9,999"],["tb4","10,000–49,999"],["tb5","≥50,000"],["nd","No data"]]
+};
+function tbValue(d){const row=TB.countries && TB.countries[d.i];return row ? row[mode==="tb-incidence"?"incidence":"smoking"] : null;}
+function tbClass(d){
+  const x=tbValue(d);
+  if(x===null || !Number.isFinite(x)) return "nd";
+  const breaks=mode==="tb-incidence" ? [10,50,100,200,400] : [1,100,1000,10000,50000];
+  return "tb"+breaks.filter(limit=>x>=limit).length;
+}
+function num(x){return Number.isFinite(x)?x.toLocaleString("en-US",{maximumFractionDigits:2}):"No data";}
+
 let palette={};
 function refreshPalette(){
   const style=getComputedStyle(document.documentElement);
-  for(const name of ["--nodata","--nodata-stroke","--c0","--c1","--c2","--c3","--c4"])
+  for(const name of ["--nodata","--nodata-stroke","--c0","--c1","--c2","--c3","--c4","--tb0","--tb1","--tb2","--tb3","--tb4","--tb5"])
     palette[name]=style.getPropertyValue(name).trim();
 }
 const css=n=>palette[n];
@@ -17,7 +31,7 @@ function fillFor(k){return k==="nd"?css("--nodata"):css("--"+k)}
 const LEG_ALL=[["c4","All 4 available"],["full","Full set"],["c3","3 available"],["c2","2 available"],["c1","1 available"],["c0","None available"],["nd","No data"]];
 const LEG_ONE=[["c4","Available"],["c0","Unavailable"],["nd","Uncertain / no data"]];
 
-let view="all", focusClass=null;
+let view="all", mode="medicines", focusClass=null, tbDrug="any", tbStatus="A";
 const svg=d3.select("#map"), W=1000, H=520;
 svg.attr("viewBox",`0 0 ${W} ${H}`);
 const feats=topojson.feature(TOPO,TOPO.objects.countries).features;
@@ -34,22 +48,34 @@ const dots=g.selectAll("circle").data(dotData).join("circle").attr("class","dot"
 let k=1;
 function paint(){
   refreshPalette();
-  const leg=view==="all"?LEG_ALL:LEG_ONE;
+  const isTB=mode!=="medicines";
+  document.getElementById("medicineViews").hidden=isTB;
+  document.getElementById("tbControls").hidden=!isTB;
+  const meta=document.getElementById("tbMeta");
+  meta.hidden=!isTB;
+  meta.textContent=TB.year ? "WHO estimates for "+TB.year+" | Snapshot created: "+(TB.updated||"unknown").slice(0,10)
+    : "WHO estimates not yet synchronized. Data will appear after the first successful automated update.";
+  svg.attr("aria-label",isTB?(mode==="tb-incidence"?"World map of estimated TB incidence per 100,000":"World map of estimated smoking-attributable tuberculosis cases"):"World map of smoking cessation medicine availability");
+  const leg=isTB?TB_LEGENDS[mode]:(view==="all"?LEG_ALL:LEG_ONE);
+  const classify=d=>isTB?tbClass(d):klass(d,view);
+  function dim(d,c){
+    if(focusClass && (focusClass==="full"?!fullSet(d):c!==focusClass))return true;
+    return isTB && tbDrug!=="any" && d.r[Number(tbDrug)]!==tbStatus;
+  }
   countries.each(function(f){
-    const d=DATA[f.id]; const el=d3.select(this);
-    if(!d){el.attr("style",null);return}
-    const c=klass(d,view);
-    const dimmed=focusClass&&(focusClass==="full"?!fullSet(d):c!==focusClass);
-    el.style("fill",fillFor(c)).classed("nd",c==="nd").classed("dim",dimmed);
+    const d=DATA[f.id],el=d3.select(this);
+    if(!d){el.attr("style",null);return;}
+    const c=classify(d);
+    el.style("fill",fillFor(c)).classed("nd",c==="nd").classed("dim",dim(d,c));
   });
   dots.each(function(o){
-    const d=DATA[o.id], c=klass(d,view);
-    const dimmed=focusClass&&(focusClass==="full"?!fullSet(d):c!==focusClass);
-    d3.select(this).style("fill",fillFor(c)).classed("nd",c==="nd").classed("dim",dimmed);
+    const d=DATA[o.id],c=classify(d);
+    d3.select(this).style("fill",fillFor(c)).classed("nd",c==="nd").classed("dim",dim(d,c));
   });
-  const counts={full:0}; Object.values(DATA).forEach(d=>{const c=klass(d,view);counts[c]=(counts[c]||0)+1;if(fullSet(d))counts.full++});
-  const items=d3.select("#legend").selectAll("li").data(leg, d=>d[0]).join(enter=>{
-    const li=enter.append("li"), b=li.append("button").attr("type","button");
+  const counts={full:0};
+  Object.values(DATA).forEach(d=>{const c=classify(d);counts[c]=(counts[c]||0)+1;if(fullSet(d))counts.full++;});
+  const items=d3.select("#legend").selectAll("li").data(leg,d=>d[0]).join(enter=>{
+    const li=enter.append("li"),b=li.append("button").attr("type","button");
     b.append("span").attr("class","sw");
     b.append("span").attr("class","label");
     b.append("span").attr("class","n");
@@ -84,10 +110,14 @@ function html(d){
   const pillTxt=d.r==="XXXX"?"No data":`${n} of 4 available`;
   const light=(c==="c2"||c==="nd");
   const full=fullSet(d);
+  const tb=TB.countries && TB.countries[d.i] || {};
+  const tbText='<div class="tb-summary"><strong>WHO tuberculosis estimates'+(TB.year?' ('+TB.year+')':'')+'</strong>'+
+    '<dl><dt>TB incidence / 100,000</dt><dd>'+num(tb.incidence)+'</dd>'+
+    '<dt>Smoking-attributable TB cases</dt><dd>'+num(tb.smoking)+'</dd></dl></div>';
   let rows=DRUGS.map((nm,i)=>`<tr><td>${nm}</td><td>${statusDot(d.r[i])}</td><td>${v(d.s[i])}</td><td>${v(d.d[i])}</td><td>${v(d.m[i])}</td></tr>`).join("");
   return `<h2>${d.n}</h2>
   <div class="sum"><span class="pill${light?" light":""}" style="background:${fillFor(c)};${c==="nd"?"border:1px solid "+css("--nodata-stroke"):""}">${pillTxt}</span>${full?"Full set available":"Full set not available"}</div>
-  <table><thead><tr><th>Medicine</th><th>Retail 2026</th><th>WHO sold</th><th>OTC/Rx</th><th>Reimbursed</th></tr></thead><tbody>${rows}</tbody></table>
+  ${tbText}<table><thead><tr><th>Medicine</th><th>Retail 2026</th><th>WHO sold</th><th>OTC/Rx</th><th>Reimbursed</th></tr></thead><tbody>${rows}</tbody></table>
   <div class="foot">NRT on national essential medicines list (WHO): ${v(d.e)}</div>`;
 }
 function place(x,y){
@@ -133,10 +163,19 @@ bind(dots,el=>DATA[d3.select(el).datum().id]);
 svg.on("click",()=>{ if(pinned) hide() });
 document.addEventListener("keydown",e=>{if(e.key==="Escape")hide()});
 
+// Data layers share the geography and country tooltip.
+d3.selectAll(".map-mode button").on("click",function(){
+  mode=this.dataset.mode;focusClass=null;hide();
+  d3.selectAll(".map-mode button").attr("aria-pressed",function(){return this.dataset.mode===mode;});
+  paint();
+});
+document.getElementById("tbMedicine").addEventListener("change",function(){tbDrug=this.value;paint();});
+document.getElementById("tbStatus").addEventListener("change",function(){tbStatus=this.value;paint();});
+
 // view switch
-d3.selectAll(".seg button").on("click",function(){
+d3.selectAll("#medicineViews button").on("click",function(){
   const btn=this; view=btn.dataset.view; focusClass=null; hide();
-  d3.selectAll(".seg button").attr("aria-pressed",function(){return this===btn});
+  d3.selectAll("#medicineViews button").attr("aria-pressed",function(){return this===btn});
   paint();
 });
 

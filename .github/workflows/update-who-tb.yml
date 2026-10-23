@@ -1,0 +1,57 @@
+name: Sync WHO tuberculosis estimates
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/update_who_tb.py"
+      - ".github/workflows/update-who-tb.yml"
+  pull_request:
+    paths:
+      - "scripts/update_who_tb.py"
+      - ".github/workflows/update-who-tb.yml"
+  workflow_dispatch:
+  schedule:
+    - cron: "27 6 * * 1"
+permissions:
+  contents: write
+concurrency:
+  group: who-tb-sync
+  cancel-in-progress: false
+jobs:
+  validate-source:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify WHO source compatibility
+        run: |
+          python -m unittest discover -s tests -p "test_who_tb.py"
+          python scripts/update_who_tb.py
+  sync:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate WHO data parser
+        run: python -m unittest discover -s tests -p "test_who_tb.py"
+      - name: Synchronize authoritative WHO CSVs
+        run: python scripts/update_who_tb.py
+      - name: Commit verified changes
+        run: |
+          if ! git diff --quiet -- data/tb-data.js; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add data/tb-data.js
+            git commit -m "Update WHO tuberculosis indicators"
+            git push
+          else
+            echo "No WHO indicator changes."
+          fi
