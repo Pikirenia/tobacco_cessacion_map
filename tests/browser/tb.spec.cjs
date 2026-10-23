@@ -64,3 +64,48 @@ test('versioned resources prevent mixing an updated page with a stale map script
   await expect(page.locator('#medicineViews')).toBeHidden();
   await expect(page.locator('#tbControls')).toBeVisible();
 });
+
+test('Full package appears first in both selectors and uses shared three-state definition', async ({page}) => {
+  await page.goto('./');
+  await expect(page.locator('#medicineViews button').first()).toHaveText('Full package');
+  await expect(page.locator('#tbMedicine option').first()).toHaveText('Full package');
+  // The default remains All countries, so switching to TB does not silently filter.
+  await expect(page.locator('#tbMedicine')).toHaveValue('any');
+  const status = await page.evaluate(() => [
+    fullPackageStatus({r:'AAAA'}),
+    fullPackageStatus({r:'AAUA'}),
+    fullPackageStatus({r:'UAAA'}),
+    fullPackageStatus({r:'AAXA'}),
+    fullPackageStatus({r:'AAUX'}),
+    fullPackageStatus({r:'AXUA'})
+  ]);
+  expect(status).toEqual(['A','A','U','A','X','X']);
+
+  await page.locator('#medicineViews [data-view="full"]').click();
+  await expect(page.locator('#medicineViews [data-view="full"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('#legend')).toContainText('Full package available');
+  await page.locator('.map-mode [data-mode="tb-incidence"]').click();
+  await page.locator('#tbMedicine').selectOption('full');
+  await page.locator('#tbStatus').selectOption('A');
+
+  const observed = await page.evaluate(() => {
+    function dim(iso) {
+      const country = [...document.querySelectorAll('#map path.country')].find(el => {
+        const d = DATA[d3.select(el).datum().id];
+        return d && d.i === iso;
+      });
+      return country ? country.classList.contains('dim') : null;
+    }
+    return {poland:dim('POL'),belarus:dim('BLR')};
+  });
+  expect(observed).toEqual({poland:false, belarus:true});
+  await page.locator('#tbStatus').selectOption('U');
+  const afterUnavailable = await page.evaluate(() => {
+    const country = [...document.querySelectorAll('#map path.country')].find(el => {
+      const d = DATA[d3.select(el).datum().id];
+      return d && d.i === 'BLR';
+    });
+    return country && country.classList.contains('dim');
+  });
+  expect(afterUnavailable).toBe(false);
+});
