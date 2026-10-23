@@ -79,6 +79,15 @@ const dots=g.selectAll("circle").data(dotData).join("circle").attr("class","dot"
 
 let k=1;
 function paint(){
+  // Firefox and other browsers can restore <select> values without firing "change".
+  // Read native controls on every render so the visible selection is the source of truth.
+  const selectedDisplay=document.getElementById("tbColorBy").value;
+  const selectedCutoff=Number(document.getElementById("tbCutoff").value);
+  if(selectedDisplay!==tbColorBy || selectedCutoff!==tbCutoff) focusClass=null;
+  tbColorBy=selectedDisplay;
+  tbCutoff=selectedCutoff;
+  tbDrug=document.getElementById("tbMedicine").value;
+  tbStatus=document.getElementById("tbStatus").value;
   refreshPalette();
   const isTB=mode!=="medicines";
   const compare=mode==="tb-incidence"&&tbColorBy==="access";
@@ -252,4 +261,6 @@ document.getElementById("q").addEventListener("change",function(){
 });
 
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change",paint);
+// pageshow also fires after browsers restore persisted form controls and on BFCache return.
+window.addEventListener("pageshow",()=>requestAnimationFrame(paint));
 paint();
