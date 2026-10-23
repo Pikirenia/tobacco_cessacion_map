@@ -5,6 +5,10 @@ on:
     paths:
       - "scripts/update_who_tb.py"
       - ".github/workflows/update-who-tb.yml"
+  pull_request:
+    paths:
+      - "scripts/update_who_tb.py"
+      - ".github/workflows/update-who-tb.yml"
   workflow_dispatch:
   schedule:
     - cron: "27 6 * * 1"
@@ -14,7 +18,20 @@ concurrency:
   group: who-tb-sync
   cancel-in-progress: false
 jobs:
+  validate-source:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify WHO source compatibility
+        run: |
+          python -m unittest discover -s tests -p "test_who_tb.py"
+          python scripts/update_who_tb.py
   sync:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
