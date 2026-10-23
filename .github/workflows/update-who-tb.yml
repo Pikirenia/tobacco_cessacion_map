@@ -1,7 +1,7 @@
 name: Sync WHO tuberculosis estimates
 on:
   push:
-    branches: [main, feature/who-tb-auto-map]
+    branches: [main]
     paths:
       - "scripts/update_who_tb.py"
       - ".github/workflows/update-who-tb.yml"
