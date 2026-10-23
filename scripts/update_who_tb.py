@@ -132,7 +132,12 @@ def build(incidence_rows, smoking_rows, allowed_iso3):
                 "smoking": round(cases) if cases is not None else None,
             }
         return {"year": y, "countries": countries}
-    raise ValueError("No common WHO year with at least " + str(MIN_COUNTRIES) + " matched countries")
+    from collections import Counter
+    raise ValueError("No common WHO year with at least " + str(MIN_COUNTRIES)
+                     + " matched countries; incidence by year="
+                     + str(Counter(y for y, iso in inc if iso in allowed_iso3))
+                     + "; smoking by year="
+                     + str(Counter(y for y, iso in smoke if iso in allowed_iso3)))
 
 
 def load_map_iso3():
@@ -145,7 +150,14 @@ def load_map_iso3():
 
 def main():
     allowed = load_map_iso3()
-    result = build(download_csv(COUNTRY_SOURCE), download_csv(RISK_SOURCE), allowed)
+    incidence_rows = download_csv(COUNTRY_SOURCE)
+    risk_rows = download_csv(RISK_SOURCE)
+    print("WHO incidence input rows:", len(incidence_rows), "risk input rows:", len(risk_rows), flush=True)
+    sample = [r for r in risk_rows if "smok" in str(r.get("risk_factor", "")).lower()][:4]
+    print("WHO smoking rows, sample dimensions:",
+          [{k: r.get(k) for k in ("year", "risk_factor", "age_group", "sex", "measure", "unit", "best")} for r in sample],
+          flush=True)
+    result = build(incidence_rows, risk_rows, allowed)
     result["updated"] = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     result["source"] = "WHO Global Tuberculosis Programme"
     result["source_urls"] = [COUNTRY_SOURCE, RISK_SOURCE]
