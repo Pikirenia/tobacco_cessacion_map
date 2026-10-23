@@ -202,3 +202,43 @@ test('comparison mode works without WHO incidence data and never reports unavail
   expect(await page.evaluate(() => tbAccessClass({i:'POL',r:'AAAA'}))).toBe('nd');
   await expect(page.locator('#legend button').last()).toContainText('195');
 });
+
+test('restored native select values immediately control the first TB layer render', async ({page}) => {
+  await page.goto('./');
+  // Simulate Firefox restoring form state without a change event.
+  await page.evaluate(() => {
+    document.getElementById('tbColorBy').value='access';
+    document.getElementById('tbCutoff').value='200';
+    document.getElementById('tbMedicine').value='full';
+  });
+  await page.locator('.map-mode [data-mode="tb-incidence"]').click();
+  await expect(page.locator('#tbColorBy')).toHaveValue('access');
+  await expect(page.locator('#tbCutoff')).toBeVisible();
+  await expect(page.locator('#tbCutoff')).toHaveValue('200');
+  await expect(page.locator('#tbControls')).toBeHidden();
+  await expect(page.locator('#legend')).toContainText('0 confirmed available');
+  await expect(page.locator('#legend')).not.toContainText('200–399');
+  await expect(page.locator('#map')).toHaveAttribute('aria-label', /comparing smoking cessation medicine availability/);
+  await expect(page.locator('#tbMeta')).toContainText('>200');
+  expect(await page.evaluate(() => tbColorBy)).toBe('access');
+  expect(await page.evaluate(() => tbCutoff)).toBe(200);
+  await page.locator('#tbColorBy').selectOption('rate');
+  await expect(page.locator('#tbControls')).toBeVisible();
+  await expect(page.locator('#legend')).toContainText('200–399');
+});
+
+test('pageshow resynchronizes controls restored after initial paint', async ({page}) => {
+  await page.goto('./');
+  await page.locator('.map-mode [data-mode="tb-incidence"]').click();
+  await expect(page.locator('#legend')).toContainText('200–399');
+  await page.evaluate(() => {
+    document.getElementById('tbColorBy').value='access';
+    document.getElementById('tbCutoff').value='400';
+    window.dispatchEvent(new PageTransitionEvent('pageshow', {persisted:true}));
+  });
+  await expect(page.locator('#tbCutoff')).toBeVisible();
+  await expect(page.locator('#tbMeta')).toContainText('>400');
+  await expect(page.locator('#legend')).toContainText('Full package available');
+  await expect(page.locator('#tbControls')).toBeHidden();
+  expect(await page.evaluate(() => tbCutoff)).toBe(400);
+});
