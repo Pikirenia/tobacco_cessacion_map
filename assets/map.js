@@ -13,11 +13,28 @@ function tbClass(d){
   return "tb"+breaks.filter(limit=>x>=limit).length;
 }
 function num(x){return Number.isFinite(x)?x.toLocaleString("en-US",{maximumFractionDigits:2}):"No data";}
+// The comparison categories are mutually exclusive and never treat uncertain as unavailable.
+function tbAccessClass(d){
+  const x=TB.countries && TB.countries[d.i] && TB.countries[d.i].incidence;
+  if(!Number.isFinite(x)) return "nd";
+  if(x<=tbCutoff) return "acc-below";
+  if(fullSet(d)) return "acc-full";
+  if(avail(d)>0) return "acc-partial";
+  return fullPackageStatus(d)==="U" ? "acc-none" : "acc-uncertain";
+}
+const LEG_TB_ACCESS=[
+  ["acc-full","Full package available"],
+  ["acc-partial","At least 1 medicine available"],
+  ["acc-none","Full package unavailable, none confirmed available"],
+  ["acc-uncertain","No confirmed availability, uncertain"],
+  ["acc-below","Incidence ≤ threshold"],
+  ["nd","No TB incidence data"]
+];
 
 let palette={};
 function refreshPalette(){
   const style=getComputedStyle(document.documentElement);
-  for(const name of ["--nodata","--nodata-stroke","--c0","--c1","--c2","--c3","--c4","--tb0","--tb1","--tb2","--tb3","--tb4","--tb5"])
+  for(const name of ["--nodata","--nodata-stroke","--c0","--c1","--c2","--c3","--c4","--tb0","--tb1","--tb2","--tb3","--tb4","--tb5","--acc-full","--acc-partial","--acc-none","--acc-uncertain","--acc-below"])
     palette[name]=style.getPropertyValue(name).trim();
 }
 const css=n=>palette[n];
@@ -43,6 +60,7 @@ const LEG_ONE=[["c4","Available"],["c0","Unavailable"],["nd","Uncertain / no dat
 const LEG_FULL=[["c4","Full package available"],["c0","Full package unavailable"],["nd","Uncertain / no data"]];
 
 let view="all", mode="medicines", focusClass=null, tbDrug="any", tbStatus="A";
+let tbColorBy="rate", tbCutoff=100;
 const svg=d3.select("#map"), W=1000, H=520;
 svg.attr("viewBox",`0 0 ${W} ${H}`);
 const feats=topojson.feature(TOPO,TOPO.objects.countries).features;
@@ -60,18 +78,24 @@ let k=1;
 function paint(){
   refreshPalette();
   const isTB=mode!=="medicines";
+  const compare=mode==="tb-incidence"&&tbColorBy==="access";
   document.getElementById("medicineViews").hidden=isTB;
-  document.getElementById("tbControls").hidden=!isTB;
+  document.getElementById("tbIncidenceControls").hidden=mode!=="tb-incidence";
+  document.getElementById("tbControls").hidden=!isTB||compare;
+  document.getElementById("tbCutoff").hidden=!compare;
+  document.getElementById("tbCutoffLabel").hidden=!compare;
   const meta=document.getElementById("tbMeta");
   meta.hidden=!isTB;
   meta.textContent=TB.year ? "WHO estimates for "+TB.year+" | Snapshot created: "+(TB.updated||"unknown").slice(0,10)
+    +(compare?" | TB incidence >"+tbCutoff+" per 100,000; colours show medicine availability":"")
     : "WHO estimates not yet synchronized. Data will appear after the first successful automated update.";
-  svg.attr("aria-label",isTB?(mode==="tb-incidence"?"World map of estimated TB incidence per 100,000":"World map of estimated smoking-attributable tuberculosis cases"):"World map of smoking cessation medicine availability");
-  const leg=isTB?TB_LEGENDS[mode]:(view==="all"?LEG_ALL:view==="full"?LEG_FULL:LEG_ONE);
-  const classify=d=>isTB?tbClass(d):klass(d,view);
+  svg.attr("aria-label",compare?"World map comparing smoking cessation medicine availability in countries with TB incidence above "+tbCutoff+" per 100,000"
+    :isTB?(mode==="tb-incidence"?"World map of estimated TB incidence per 100,000":"World map of estimated smoking-attributable tuberculosis cases"):"World map of smoking cessation medicine availability");
+  const leg=compare?LEG_TB_ACCESS:isTB?TB_LEGENDS[mode]:(view==="all"?LEG_ALL:view==="full"?LEG_FULL:LEG_ONE);
+  const classify=d=>compare?tbAccessClass(d):isTB?tbClass(d):klass(d,view);
   function dim(d,c){
     if(focusClass && (focusClass==="full"?!fullSet(d):c!==focusClass))return true;
-    return isTB && tbDrug!=="any" && (
+    return isTB && !compare && tbDrug!=="any" && (
       tbDrug==="full" ? fullPackageStatus(d)!==tbStatus : d.r[Number(tbDrug)]!==tbStatus
     );
   }
@@ -124,13 +148,23 @@ function html(d){
   const light=(c==="c2"||c==="nd");
   const full=fullSet(d);
   const tb=TB.countries && TB.countries[d.i] || {};
+  const comparison=mode==="tb-incidence"&&tbColorBy==="access";
+  const comparisonText=comparison?'<div class="foot">Incidence threshold: &gt;'+tbCutoff+
+    ' per 100,000. Comparison category: '+({
+      "acc-full":"Full package available",
+      "acc-partial":"At least one medicine available; full package not confirmed",
+      "acc-none":"Full package unavailable; no medicine confirmed available",
+      "acc-uncertain":"No medicine confirmed available; evidence incomplete",
+      "acc-below":"Below or equal to incidence threshold",
+      "nd":"TB incidence data unavailable"
+    }[tbAccessClass(d)])+'</div>':'';
   const tbText='<div class="tb-summary"><strong>WHO tuberculosis estimates'+(TB.year?' ('+TB.year+')':'')+'</strong>'+
     '<dl><dt>TB incidence / 100,000</dt><dd>'+num(tb.incidence)+'</dd>'+
     '<dt>Smoking-attributable TB cases</dt><dd>'+num(tb.smoking)+'</dd></dl></div>';
   let rows=DRUGS.map((nm,i)=>`<tr><td>${nm}</td><td>${statusDot(d.r[i])}</td><td>${v(d.s[i])}</td><td>${v(d.d[i])}</td><td>${v(d.m[i])}</td></tr>`).join("");
   return `<h2>${d.n}</h2>
   <div class="sum"><span class="pill${light?" light":""}" style="background:${fillFor(c)};${c==="nd"?"border:1px solid "+css("--nodata-stroke"):""}">${pillTxt}</span>${full?"Full package available":"Full package not confirmed available"}</div>
-  ${tbText}<table><thead><tr><th>Medicine</th><th>Retail 2026</th><th>WHO sold</th><th>OTC/Rx</th><th>Reimbursed</th></tr></thead><tbody>${rows}</tbody></table>
+  ${tbText}${comparisonText}<table><thead><tr><th>Medicine</th><th>Retail 2026</th><th>WHO sold</th><th>OTC/Rx</th><th>Reimbursed</th></tr></thead><tbody>${rows}</tbody></table>
   <div class="foot">NRT on national essential medicines list (WHO): ${v(d.e)}</div>`;
 }
 function place(x,y){
@@ -181,6 +215,12 @@ d3.selectAll(".map-mode button").on("click",function(){
   mode=this.dataset.mode;focusClass=null;hide();
   d3.selectAll(".map-mode button").attr("aria-pressed",function(){return this.dataset.mode===mode;});
   paint();
+});
+document.getElementById("tbColorBy").addEventListener("change",function(){
+  tbColorBy=this.value;focusClass=null;hide();paint();
+});
+document.getElementById("tbCutoff").addEventListener("change",function(){
+  tbCutoff=Number(this.value);focusClass=null;hide();paint();
 });
 document.getElementById("tbMedicine").addEventListener("change",function(){tbDrug=this.value;paint();});
 document.getElementById("tbStatus").addEventListener("change",function(){tbStatus=this.value;paint();});

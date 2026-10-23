@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/site.css?v=tb-20261023-2">
+<link rel="stylesheet" href="assets/site.css?v=tb-incidence-access-1">
 </head>
 <body>
 <div class="wrap">
@@ -30,6 +30,19 @@
     <button type="button" data-view="1" aria-pressed="false">Varenicline</button>
     <button type="button" data-view="2" aria-pressed="false">Cytisine</button>
     <button type="button" data-view="3" aria-pressed="false">Bupropion</button>
+  </div>
+  <div id="tbIncidenceControls" class="tb-controls" hidden>
+    <label for="tbColorBy">TB incidence display</label>
+    <select id="tbColorBy">
+      <option value="rate">Incidence rate</option>
+      <option value="access">Medicine access comparison</option>
+    </select>
+    <label for="tbCutoff" id="tbCutoffLabel" hidden>Incidence above</label>
+    <select id="tbCutoff" hidden>
+      <option value="100">&gt;100 / 100,000</option>
+      <option value="200">&gt;200 / 100,000</option>
+      <option value="400">&gt;400 / 100,000</option>
+    </select>
   </div>
   <div id="tbControls" class="tb-controls" hidden>
     <label for="tbMedicine">Highlight by medicine or package</label>
@@ -65,7 +78,7 @@
 </div>
 <ul class="legend" id="legend"></ul>
 <p id="tbMeta" class="hint" aria-live="polite" hidden></p>
-<p class="hint">Select a legend band to highlight countries within that range. In TB modes, use the medicine controls to highlight countries by retail availability. Small island states are shown as dots. Drag to pan, pinch or scroll to zoom.</p>
+<p class="hint">Select a legend item to highlight its countries. In TB incidence, choose "Medicine access comparison" to colour countries above a selected incidence threshold by cessation medicine availability. Other countries are muted. Small island states are shown as dots. Drag to pan, pinch or scroll to zoom.</p>
 
 <section class="notes">
   <p><b>Retail status</b> reflects practical consumer availability based on the latest information received: a medicine counts as available when at least one of two independent, consumer-facing retail sources shows a current way to buy, order or reserve it. Unavailable means both sources gave a confirmed negative result; uncertain means neither condition was met. Bupropion counts as available even where it is marketed only as an antidepressant.</p>
@@ -73,6 +86,7 @@
   <p><b>WHO columns</b> show what each country reported to WHO for 2024: whether the medicine is legally sold, its dispensing category (OTC or Rx) and whether its cost is reimbursed. WHO data describe legal status, not current stock, and may differ from retail findings.</p>
   <p>“Full package” means NRT, bupropion and at least one of varenicline or cytisine are all available. A package is unavailable only when at least one required component is confirmed unavailable; otherwise it may be uncertain.</p>
   <p><b>Tuberculosis layers</b> display WHO modelled annual estimates, not notified case counts. TB incidence is expressed per 100,000 people. Smoking-attributable TB is the estimated annual number of incident cases attributable to smoking among adults (aged 15+), not the number of patients with TB who smoke. Risk factors may overlap. All TB estimates on the map use the latest common reference year available from both WHO CSV sources. Missing data are not interpreted as zero.</p>
+  <p><b>TB incidence + medicine access comparison:</b> Among countries strictly above the selected incidence threshold, dark green means the full package is available, light green means at least one medicine is confirmed available but the full package is not, and red means the full package is confirmed unavailable with no medicine confirmed available. Grey means no medicine has confirmed availability and the package status cannot be established. Countries below or equal to the threshold are muted; countries without TB incidence data are marked separately. These mutually exclusive groups avoid interpreting unknown availability as confirmed absence.</p>
   <p><b>WHO TB sources:</b> <a href="https://extranet.who.int/tme/generateCSV.asp?ds=estimates">TB burden estimates</a> and <a href="https://extranet.who.int/tme/generateCSV.asp?ds=estimates_age_sex">incidence disaggregated by risk factors</a>. <a href="https://www.who.int/teams/global-programme-on-tuberculosis-and-lung-health/data">WHO documentation and terms</a>. Estimates are synchronized automatically and may be retrospectively revised.</p>
 </section>
 <p class="credit">Created and maintained by PhD, MD Uladzimir Pikirenia (<a href="mailto:pikireniauladzimir@gmail.com">pikireniauladzimir@gmail.com</a>)</p>
@@ -86,6 +100,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js" defer></script>
 <script src="data/world-topology.js" defer></script>
-<script src="assets/map.js?v=tb-20261023-full-package" defer></script>
+<script src="assets/map.js?v=tb-incidence-access-1" defer></script>
 </body>
 </html>
