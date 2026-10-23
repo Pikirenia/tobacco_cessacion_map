@@ -234,7 +234,7 @@ test('pageshow resynchronizes controls restored after initial paint', async ({pa
   await page.evaluate(() => {
     document.getElementById('tbColorBy').value='access';
     document.getElementById('tbCutoff').value='400';
-    window.dispatchEvent(new PageTransitionEvent('pageshow', {persisted:true}));
+    window.dispatchEvent(new Event('pageshow'))
   });
   await expect(page.locator('#tbCutoff')).toBeVisible();
   await expect(page.locator('#tbMeta')).toContainText('>400');
