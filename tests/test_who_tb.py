@@ -28,11 +28,11 @@ class WhoTBTests(unittest.TestCase):
             return {"iso3":iso,"year":year,"risk_factor":risk,"measure":"inc",
                     "unit":"num","sex":sex,"age_group":age,"best":best}
         risk = [
-            row("POL","smoking","340.2"),
-            row("BLR","smoking","680.9"),
+            row("POL","smk","340.2"),
+            row("BLR","smk","680.9"),
             row("POL","diabetes","90000"),
             row("BLR","smoking","99000",sex="m"),
-            row("POL","smoking","310","2023"),
+            row("POL","smk","310","2023"),
             row("BLR","smoking","660","2023"),
         ]
         out = tb.build(inc,risk,{"POL","BLR","USA"})
