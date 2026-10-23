@@ -1,5 +1,10 @@
 name: Sync WHO tuberculosis estimates
 on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/update_who_tb.py"
+      - ".github/workflows/update-who-tb.yml"
   workflow_dispatch:
   schedule:
     - cron: "27 6 * * 1"
