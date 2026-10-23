@@ -9,7 +9,7 @@ Interactive world map of legal retail availability of four smoking cessation med
 - **Colour** — number of medicines with confirmed retail availability (0–4). White: status of all four medicines is uncertain (no data). Grey: territories outside the 195-country study.
 - **Tooltip** (hover or tap) — retail status per medicine, WHO "legally sold" status (2024), dispensing category (OTC/Rx), reimbursement, and inclusion of NRT in the national essential medicines list.
 - **Layer switch** — medicines, WHO TB incidence per 100,000, or WHO smoking-attributable TB cases. The original per-medicine availability views remain unchanged.
-- **Combined exploration** — in either TB layer, filter/highlight countries by retail availability of an individual medicine; country tooltips display both TB measures and medicine availability.
+- **Combined exploration** — in either TB layer, filter/highlight countries by retail availability of an individual medicine or the Full package; country tooltips display both TB measures and medicine availability.
 
 ## Definitions
 
@@ -17,7 +17,7 @@ Interactive world map of legal retail availability of four smoking cessation med
 - **UNAVAILABLE** — both applicable sources gave a browser-confirmed negative result.
 - **UNCERTAIN** — neither condition was met.
 - Bupropion counts as available even where it is marketed only as an antidepressant.
-- **Full set** — NRT + bupropion + (varenicline or cytisine).
+- **Full package** — NRT + bupropion + (varenicline or cytisine). A package is confirmed unavailable only if NRT or bupropion is unavailable, or both varenicline and cytisine are unavailable. Otherwise its status is uncertain unless all required components are confirmed available.
 - WHO data describe legal status in 2024, not current stock.
 
 ## Data

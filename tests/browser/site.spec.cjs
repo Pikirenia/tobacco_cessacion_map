@@ -3,7 +3,7 @@ const {test, expect} = require('@playwright/test');
 test('map filters retain keyboard focus, search, zoom and navigation work', async ({page}) => {
   const errors=[];page.on('pageerror', e=>errors.push(e.message));
   await page.goto('./');
-  const full=page.getByRole('button', {name:/^Full set/});
+  const full=page.locator('#legend').getByRole('button', {name:/^Full package/});
   await expect(full).toBeVisible();
   await full.focus();await page.keyboard.press('Enter');
   await expect(full).toHaveAttribute('aria-pressed','true');

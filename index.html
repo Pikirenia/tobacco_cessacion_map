@@ -24,6 +24,7 @@
 </div>
 <div class="controls">
   <div class="seg" id="medicineViews" role="group" aria-label="Medicine availability">
+    <button type="button" data-view="full" aria-pressed="false">Full package</button>
     <button type="button" data-view="all" aria-pressed="true">All four</button>
     <button type="button" data-view="0" aria-pressed="false">NRT</button>
     <button type="button" data-view="1" aria-pressed="false">Varenicline</button>
@@ -31,9 +32,10 @@
     <button type="button" data-view="3" aria-pressed="false">Bupropion</button>
   </div>
   <div id="tbControls" class="tb-controls" hidden>
-    <label for="tbMedicine">Highlight countries by medicine</label>
+    <label for="tbMedicine">Highlight by medicine or package</label>
     <select id="tbMedicine">
-      <option value="any">All countries</option>
+      <option value="full">Full package</option>
+      <option value="any" selected>All countries</option>
       <option value="0">NRT</option>
       <option value="1">Varenicline</option>
       <option value="2">Cytisine</option>
@@ -69,7 +71,7 @@
   <p><b>Retail status</b> reflects practical consumer availability based on the latest information received: a medicine counts as available when at least one of two independent, consumer-facing retail sources shows a current way to buy, order or reserve it. Unavailable means both sources gave a confirmed negative result; uncertain means neither condition was met. Bupropion counts as available even where it is marketed only as an antidepressant.</p>
   <p><b>No data</b> (white) marks countries where the status of all four medicines is uncertain; in most of them the medicines are probably not available through open retail channels. Grey areas are territories outside the 195-country study.</p>
   <p><b>WHO columns</b> show what each country reported to WHO for 2024: whether the medicine is legally sold, its dispensing category (OTC or Rx) and whether its cost is reimbursed. WHO data describe legal status, not current stock, and may differ from retail findings.</p>
-  <p>“Full set” means NRT, bupropion and at least one of varenicline or cytisine are all available.</p>
+  <p>“Full package” means NRT, bupropion and at least one of varenicline or cytisine are all available. A package is unavailable only when at least one required component is confirmed unavailable; otherwise it may be uncertain.</p>
   <p><b>Tuberculosis layers</b> display WHO modelled annual estimates, not notified case counts. TB incidence is expressed per 100,000 people. Smoking-attributable TB is the estimated annual number of incident cases attributable to smoking among adults (aged 15+), not the number of patients with TB who smoke. Risk factors may overlap. All TB estimates on the map use the latest common reference year available from both WHO CSV sources. Missing data are not interpreted as zero.</p>
   <p><b>WHO TB sources:</b> <a href="https://extranet.who.int/tme/generateCSV.asp?ds=estimates">TB burden estimates</a> and <a href="https://extranet.who.int/tme/generateCSV.asp?ds=estimates_age_sex">incidence disaggregated by risk factors</a>. <a href="https://www.who.int/teams/global-programme-on-tuberculosis-and-lung-health/data">WHO documentation and terms</a>. Estimates are synchronized automatically and may be retrospectively revised.</p>
 </section>
@@ -84,6 +86,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js" defer></script>
 <script src="data/world-topology.js" defer></script>
-<script src="assets/map.js?v=tb-20261023-2" defer></script>
+<script src="assets/map.js?v=tb-20261023-full-package" defer></script>
 </body>
 </html>

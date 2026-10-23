@@ -23,13 +23,24 @@ function refreshPalette(){
 const css=n=>palette[n];
 function avail(d){return (d.r.match(/A/g)||[]).length}
 function fullSet(d){return d.r[0]==="A"&&d.r[3]==="A"&&(d.r[1]==="A"||d.r[2]==="A")}
+// Treat uncertain components as uncertain rather than confirmed unavailability.
+function fullPackageStatus(d){
+  if(fullSet(d)) return "A";
+  if(d.r[0]==="U"||d.r[3]==="U"||(d.r[1]==="U"&&d.r[2]==="U")) return "U";
+  return "X";
+}
 function klass(d,view){
+  if(view==="full"){
+    const s=fullPackageStatus(d);
+    return s==="A"?"c4":s==="U"?"c0":"nd";
+  }
   if(view==="all"){ if(d.r==="XXXX") return "nd"; return "c"+avail(d); }
   const s=d.r[+view]; return s==="A"?"c4":s==="U"?"c0":"nd";
 }
 function fillFor(k){return k==="nd"?css("--nodata"):css("--"+k)}
-const LEG_ALL=[["c4","All 4 available"],["full","Full set"],["c3","3 available"],["c2","2 available"],["c1","1 available"],["c0","None available"],["nd","No data"]];
+const LEG_ALL=[["c4","All 4 available"],["full","Full package"],["c3","3 available"],["c2","2 available"],["c1","1 available"],["c0","None available"],["nd","No data"]];
 const LEG_ONE=[["c4","Available"],["c0","Unavailable"],["nd","Uncertain / no data"]];
+const LEG_FULL=[["c4","Full package available"],["c0","Full package unavailable"],["nd","Uncertain / no data"]];
 
 let view="all", mode="medicines", focusClass=null, tbDrug="any", tbStatus="A";
 const svg=d3.select("#map"), W=1000, H=520;
@@ -56,11 +67,13 @@ function paint(){
   meta.textContent=TB.year ? "WHO estimates for "+TB.year+" | Snapshot created: "+(TB.updated||"unknown").slice(0,10)
     : "WHO estimates not yet synchronized. Data will appear after the first successful automated update.";
   svg.attr("aria-label",isTB?(mode==="tb-incidence"?"World map of estimated TB incidence per 100,000":"World map of estimated smoking-attributable tuberculosis cases"):"World map of smoking cessation medicine availability");
-  const leg=isTB?TB_LEGENDS[mode]:(view==="all"?LEG_ALL:LEG_ONE);
+  const leg=isTB?TB_LEGENDS[mode]:(view==="all"?LEG_ALL:view==="full"?LEG_FULL:LEG_ONE);
   const classify=d=>isTB?tbClass(d):klass(d,view);
   function dim(d,c){
     if(focusClass && (focusClass==="full"?!fullSet(d):c!==focusClass))return true;
-    return isTB && tbDrug!=="any" && d.r[Number(tbDrug)]!==tbStatus;
+    return isTB && tbDrug!=="any" && (
+      tbDrug==="full" ? fullPackageStatus(d)!==tbStatus : d.r[Number(tbDrug)]!==tbStatus
+    );
   }
   countries.each(function(f){
     const d=DATA[f.id],el=d3.select(this);
@@ -116,7 +129,7 @@ function html(d){
     '<dt>Smoking-attributable TB cases</dt><dd>'+num(tb.smoking)+'</dd></dl></div>';
   let rows=DRUGS.map((nm,i)=>`<tr><td>${nm}</td><td>${statusDot(d.r[i])}</td><td>${v(d.s[i])}</td><td>${v(d.d[i])}</td><td>${v(d.m[i])}</td></tr>`).join("");
   return `<h2>${d.n}</h2>
-  <div class="sum"><span class="pill${light?" light":""}" style="background:${fillFor(c)};${c==="nd"?"border:1px solid "+css("--nodata-stroke"):""}">${pillTxt}</span>${full?"Full set available":"Full set not available"}</div>
+  <div class="sum"><span class="pill${light?" light":""}" style="background:${fillFor(c)};${c==="nd"?"border:1px solid "+css("--nodata-stroke"):""}">${pillTxt}</span>${full?"Full package available":"Full package not confirmed available"}</div>
   ${tbText}<table><thead><tr><th>Medicine</th><th>Retail 2026</th><th>WHO sold</th><th>OTC/Rx</th><th>Reimbursed</th></tr></thead><tbody>${rows}</tbody></table>
   <div class="foot">NRT on national essential medicines list (WHO): ${v(d.e)}</div>`;
 }
