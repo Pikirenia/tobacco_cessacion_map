@@ -1,0 +1,108 @@
+name: Same-run A/B performance comparison (main vs optimization, read-only)
+on:
+  push:
+    branches: [benchmark-release-comparison]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  controlled-ab:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    steps:
+      - name: Checkout benchmark harness
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Checkout old production source
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: old_site/tobacco_cessacion_map
+          persist-credentials: false
+      - name: Checkout new integrated source
+        uses: actions/checkout@v4
+        with:
+          ref: optimization
+          path: new_site/tobacco_cessacion_map
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: bash scripts/baseline/install-deps.sh
+      - run: npx playwright install --with-deps chromium
+      - name: Start identical static Python servers on separate localhost ports
+        run: |
+          python3 -m http.server 8766 --bind 127.0.0.1 --directory old_site >/tmp/old-site.log 2>&1 &
+          python3 -m http.server 8767 --bind 127.0.0.1 --directory new_site >/tmp/new-site.log 2>&1 &
+          for port in 8766 8767; do
+            for i in $(seq 1 30); do
+              if curl -fsS "http://127.0.0.1:${port}/tobacco_cessacion_map/" -o /dev/null; then break; fi
+              sleep 1
+            done
+            curl -fsS "http://127.0.0.1:${port}/tobacco_cessacion_map/" -o /dev/null
+          done
+      - name: Twelve interleaved A/B cold-context pairs per viewport
+        run: node scripts/performance/compare-releases.cjs
+      - name: Five interleaved A/B Lighthouse 12.4 runs per device/version
+        shell: bash
+        run: |
+          set -euo pipefail
+          export CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")"
+          mkdir -p compare-artifacts
+          for device in mobile desktop; do
+            if [ "$device" = desktop ]; then flag='--preset=desktop'; else flag='--form-factor=mobile'; fi
+            for i in 1 2 3 4 5; do
+              if (( i % 2 == 1 )); then order="old new"; else order="new old"; fi
+              for version in $order; do
+                if [ "$version" = old ]; then port=8766; else port=8767; fi
+                npx --yes --package=lighthouse@12.4.0 lighthouse "http://127.0.0.1:${port}/tobacco_cessacion_map/" \
+                  --quiet --chrome-flags='--headless --no-sandbox --disable-dev-shm-usage' \
+                  --only-categories=performance --output=json \
+                  --output-path="compare-artifacts/lighthouse-${version}-${device}-${i}.json" \
+                  "$flag"
+              done
+            done
+          done
+      - name: Print paired summary and raw file size differences
+        run: |
+          python3 - <<'PY'
+          import json,pathlib,statistics
+          p=pathlib.Path("compare-artifacts")
+          for width in ['375','1280']:
+              report=json.loads((p/'playwright-ab.json').read_text())['summary'][width]
+              print("PAIR_VIEWPORT",width)
+              for metric in ['mapReadyMs','fcp','cls','dcl','load']:
+                  old=report['old'][metric]['median']
+                  new=report['new'][metric]['median']
+                  print(metric,'old',old,'new',new,'delta',round(new-old,2))
+              for metric in ['tb-incidence','tb-smoking','medicines','tb-comparison','threshold-200','search']:
+                  old=report['old']['interactions'][metric]['median']
+                  new=report['new']['interactions'][metric]['median']
+                  print('interaction:'+metric,'old',old,'new',new,'delta',round(new-old,2))
+          for device in ['mobile','desktop']:
+              print('LIGHTHOUSE',device)
+              for metric in ['performance','largest-contentful-paint','cumulative-layout-shift','total-blocking-time']:
+                  for ver in ['old','new']:
+                      samples=[]
+                      for i in range(1,6):
+                          d=json.loads((p/f'lighthouse-{ver}-{device}-{i}.json').read_text())
+                          v=d['categories']['performance']['score']*100 if metric=='performance' else d['audits'][metric]['numericValue']
+                          samples.append(round(v,2))
+                      print(metric,ver,'median',round(statistics.median(samples),2),'range',min(samples),max(samples),'runs',samples)
+          resource=json.loads((p/'playwright-ab.json').read_text())['resources']
+          print('RESOURCES',json.dumps(resource))
+          PY
+      - name: Save complete benchmark and lighthouse sources
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: same-run-production-vs-optimization
+          path: compare-artifacts/
+          retention-days: 30
+          if-no-files-found: warn
