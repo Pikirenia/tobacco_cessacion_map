@@ -13,10 +13,8 @@ for(const width of widths) for(const scheme of ['light','dark']) {
       await state(page, mode);
       await expect(page.locator('#mapbox')).toHaveScreenshot(
         width + '-' + scheme + '-' + mode + '-desktop-v2-map.png');
-      if(mode === 'medicines' || ((width === 375 || width === 1280) && mode.startsWith('compare'))) {
-        await expect(page).toHaveScreenshot(width + '-' + scheme + '-' + mode + '-desktop-v2-page.png',
-          {fullPage: true});
-      }
+      // Full-page PR2 images remain historical references: PR3 changes page copy
+      // and reserves map space. PR3 supplies independent responsive snapshots.
     });
   });
 }
