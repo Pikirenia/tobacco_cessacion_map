@@ -74,7 +74,19 @@ const countries=g.selectAll("path").data(feats).join("path")
   .attr("d",path)
   .attr("class",f=>"country"+(DATA[f.id]?"":" out"));
 const dotData=Object.entries(DATA).filter(([k,d])=>d.ll).map(([k,d])=>({id:k,xy:proj(d.ll)}));
-const dots=g.selectAll("circle").data(dotData).join("circle").attr("class","dot")
+// Overlay invisible hit regions on genuinely tiny countries; their visible shape stays unchanged.
+const smallTargets=feats.filter(f=>{
+  if(!DATA[f.id] || DATA[f.id].ll) return false;
+  const [[x0,y0],[x1,y1]]=path.bounds(f);
+  return Number.isFinite(x0) && (x1-x0<14 || y1-y0<14);
+}).map(f=>{
+  const [[x0,y0],[x1,y1]]=path.bounds(f);
+  return {id:f.id,xy:[(x0+x1)/2,(y0+y1)/2]};
+});
+const targetData=smallTargets.concat(dotData);
+const targets=g.selectAll("circle.tap-target").data(targetData).join("circle")
+  .attr("class","tap-target").attr("cx",d=>d.xy[0]).attr("cy",d=>d.xy[1]);
+const dots=g.selectAll("circle.dot").data(dotData).join("circle").attr("class","dot")
   .attr("cx",d=>d.xy[0]).attr("cy",d=>d.xy[1]);
 
 let k=1;
@@ -141,14 +153,38 @@ function paint(){
 }
 function strokes(){
   countries.style("stroke-width",0.5/k+"px");
-  dots.attr("r",Math.max(2.2,3.6/Math.sqrt(k))/Math.sqrt(k)).style("stroke-width",0.6/k+"px");
+  dots.attr("r",(matchMedia("(max-width:640px)").matches?Math.max(3.5,5.5/Math.sqrt(k)):Math.max(2.2,3.6/Math.sqrt(k)))/Math.sqrt(k))
+    .style("stroke-width",0.6/k+"px");
+  targets.attr("r",matchMedia("(max-width:640px)").matches?22/k:10/k);
 }
+const isMobile=()=>matchMedia("(max-width:640px)").matches;
+const reduced=()=>matchMedia("(prefers-reduced-motion:reduce)").matches;
 const zoom=d3.zoom().scaleExtent([1,24]).translateExtent([[0,0],[W,H]])
+  .filter(e=>{
+    if(e.type==="wheel" && isMobile()) return false; // prevent accidental scroll-wheel zoom
+    if(e.type.startsWith("touch")) return e.touches && e.touches.length>=2;
+    return !e.button;
+  })
   .on("zoom",e=>{k=e.transform.k;g.attr("transform",e.transform);strokes();});
 svg.call(zoom).on("dblclick.zoom",null);
-d3.select("#zin").on("click",()=>svg.transition().duration(250).call(zoom.scaleBy,1.8));
-d3.select("#zout").on("click",()=>svg.transition().duration(250).call(zoom.scaleBy,1/1.8));
-d3.select("#zreset").on("click",()=>svg.transition().duration(300).call(zoom.transform,d3.zoomIdentity));
+function zoomTo(method,value,duration){
+  const selection=reduced()?svg:svg.transition().duration(duration);
+  selection.call(zoom[method],value);
+}
+d3.select("#zin").on("click",()=>zoomTo("scaleBy",1.8,250));
+d3.select("#zout").on("click",()=>zoomTo("scaleBy",1/1.8,250));
+d3.select("#zreset").on("click",()=>zoomTo("transform",d3.zoomIdentity,300));
+function setOverview(full){
+  const mapbox=document.getElementById("mapbox");
+  mapbox.classList.toggle("overview",full);
+  svg.attr("preserveAspectRatio",full||!isMobile()?"xMidYMid meet":"xMidYMid slice");
+  const b=document.getElementById("zoverview");
+  b.setAttribute("aria-pressed",String(full));
+  b.setAttribute("aria-label",full?"Show enlarged map":"Show whole world");
+  b.textContent=full?"Explore":"World";
+  svg.call(zoom.transform,d3.zoomIdentity);
+}
+d3.select("#zoverview").on("click",()=>setOverview(!document.getElementById("mapbox").classList.contains("overview")));
 strokes();
 
 // tooltip
@@ -176,9 +212,15 @@ function html(d){
     '<dl><dt>TB incidence / 100,000</dt><dd>'+num(tb.incidence)+'</dd>'+
     '<dt>Smoking-attributable TB cases</dt><dd>'+num(tb.smoking)+'</dd></dl></div>';
   let rows=DRUGS.map((nm,i)=>`<tr><td>${nm}</td><td>${statusDot(d.r[i])}</td><td>${v(d.s[i])}</td><td>${v(d.d[i])}</td><td>${v(d.m[i])}</td></tr>`).join("");
+  const cards=DRUGS.map((nm,i)=>`<article class="medicine-card"><h3>${nm}</h3><dl>
+    <dt>Retail availability</dt><dd>${statusDot(d.r[i])}</dd>
+    <dt>WHO sold</dt><dd>${v(d.s[i])}</dd>
+    <dt>WHO OTC/Rx</dt><dd>${v(d.d[i])}</dd>
+    <dt>WHO reimbursed</dt><dd>${v(d.m[i])}</dd>
+    </dl></article>`).join("");
   return `<h2>${d.n}</h2>
   <div class="sum"><span class="pill${light?" light":""}" style="background:${fillFor(c)};${c==="nd"?"border:1px solid "+css("--nodata-stroke"):""}">${pillTxt}</span>${full?"Full package available":"Full package not confirmed available"}</div>
-  ${tbText}${comparisonText}<table><thead><tr><th>Medicine</th><th>Retail 2026</th><th>WHO sold</th><th>OTC/Rx</th><th>Reimbursed</th></tr></thead><tbody>${rows}</tbody></table>
+  ${tbText}${comparisonText}<table><thead><tr><th>Medicine</th><th>Retail 2026</th><th>WHO sold</th><th>OTC/Rx</th><th>Reimbursed</th></tr></thead><tbody>${rows}</tbody></table><section class="medicine-cards" aria-label="Medicine availability and WHO access details">${cards}</section>
   <div class="foot">NRT on national essential medicines list (WHO): ${v(d.e)}</div>`;
 }
 function place(x,y){
@@ -188,7 +230,9 @@ function place(x,y){
   if(T+r.height>innerHeight-8) T=y-r.height-pad;
   tip.style.left=Math.max(8,L)+"px"; tip.style.top=Math.max(8,T)+"px";
 }
-const narrow=()=>matchMedia("(max-width:640px)").matches;
+const narrow=isMobile;
+setOverview(false);
+let focusSource=null;
 let hotEl=null;
 function hot(el){ if(hotEl) d3.select(hotEl).classed("hot",false).style("stroke-width",null); hotEl=el; if(el){d3.select(el).classed("hot",true).style("stroke-width",1.6/k+"px").raise();} }
 function show(d,el,x,y,pin){
@@ -197,14 +241,25 @@ function show(d,el,x,y,pin){
   if(!!pinned!==!!pin)tipSize=null;
   tip.classList.toggle("sheet",pin&&narrow()); tip.classList.toggle("pinned",!!pin&&!narrow());
   tip.classList.add("on");
+  tip.setAttribute("aria-hidden",pin?"false":"true");
   if(!(pin&&narrow())) place(x,y); else {tip.style.left="";tip.style.top="";}
   pinned=pin?d:null;
+  if(pin&&narrow()) {
+    if(!focusSource) focusSource=document.activeElement;
+    tip.querySelector(".x").focus({preventScroll:true});
+  }
 }
 function hide(){
   cancelAnimationFrame(moveFrame);moveFrame=0;pointer=null;
-  tip.classList.remove("on","sheet","pinned");pinned=null;shownData=null;tipSize=null;hot(null);
+  const restore=focusSource;
+  tip.classList.remove("on","sheet","pinned");tip.setAttribute("aria-hidden","true");
+  pinned=null;shownData=null;tipSize=null;hot(null);focusSource=null;
+  if(restore && restore.isConnected && narrow()) restore.focus({preventScroll:true});
 }
-window.addEventListener("resize",hide);
+window.addEventListener("resize",()=>{
+  if(pinned) hide();
+  setOverview(false);strokes();
+});
 tip.querySelector(".x").addEventListener("click",hide);
 function bind(sel,getD){
   sel.on("pointermove",function(e){
@@ -217,10 +272,19 @@ function bind(sel,getD){
     });
   })
      .on("pointerleave",function(e){ if(e.pointerType==="mouse"&&!pinned) hide()})
-     .on("click",function(e){ const d=getD(this); if(!d) return; e.stopPropagation(); show(d,this,e.clientX,e.clientY,true)});
+     .on("click",function(e){ const d=getD(this); if(!d) return; e.stopPropagation(); focusSource=this; show(d,this,e.clientX,e.clientY,true)})
+     .attr("tabindex",0).attr("role","button")
+     .attr("aria-label",function(){const d=getD(this);return d?d.n+" country details":"Country details"})
+     .on("keydown",function(e){
+       if(e.key!=="Enter"&&e.key!==" ")return;
+       const d=getD(this);if(!d)return;
+       e.preventDefault();e.stopPropagation();focusSource=this;
+       const r=this.getBoundingClientRect();show(d,this,r.left+r.width/2,r.top+r.height/2,true);
+     });
 }
 bind(countries,el=>DATA[d3.select(el).datum().id]);
 bind(dots,el=>DATA[d3.select(el).datum().id]);
+bind(targets,el=>DATA[d3.select(el).datum().id]);
 svg.on("click",()=>{ if(pinned) hide() });
 document.addEventListener("keydown",e=>{if(e.key==="Escape")hide()});
 
@@ -265,9 +329,12 @@ document.getElementById("q").addEventListener("change",function(){
   if(f && !d.ll){ const [[x0,y0],[x1,y1]]=path.bounds(f); cx=(x0+x1)/2; cy=(y0+y1)/2; scale=Math.min(8,0.5/Math.max((x1-x0)/W,(y1-y0)/H)); el=countries.filter(q=>q.id===id).node(); }
   else { const o=dotData.find(o=>o.id===id); [cx,cy]=o.xy; scale=8; el=dots.filter(q=>q.id===id).node(); }
   scale=Math.max(1,scale);
-  svg.transition().duration(500).call(zoom.transform,d3.zoomIdentity.translate(W/2,H/2).scale(scale).translate(-cx,-cy))
-    .on("end",()=>{const r=el.getBoundingClientRect(); show(d,el,r.left+r.width/2,r.top+r.height/2,true)});
-  this.blur();
+  focusSource=this;
+  // Instant positioning in reduced-motion mode; otherwise report the selected country after zoom.
+  const target=d3.zoomIdentity.translate(W/2,H/2).scale(scale).translate(-cx,-cy);
+  const present=()=>{const r=el.getBoundingClientRect();show(d,el,r.left+r.width/2,r.top+r.height/2,true)};
+  if(reduced()){svg.call(zoom.transform,target);present();}
+  else svg.transition().duration(500).call(zoom.transform,target).on("end",present);
 });
 
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change",paint);
