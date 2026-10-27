@@ -11,7 +11,7 @@ for(const width of widths) for(const scheme of ['light','dark']) {
       await ready(page);
       await state(page, mode);
       await expect(page.locator('#mapbox')).toHaveScreenshot(
-        width + '-' + scheme + '-' + mode + '-map.png');
+        width + '-' + scheme + '-' + mode + '-desktop-v2-map.png');
       if(mode === 'medicines' || ((width === 375 || width === 1280) && mode.startsWith('compare'))) {
         await expect(page).toHaveScreenshot(width + '-' + scheme + '-' + mode + '-desktop-v2-page.png',
           {fullPage: true});
