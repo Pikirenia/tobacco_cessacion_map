@@ -1,5 +1,20 @@
 const {test,expect}=require('@playwright/test');
-const {deterministic}=require('../baseline/support.cjs');
+const fs=require('node:fs');
+const path=require('node:path');
+const fixture=name=>fs.readFileSync(path.join(__dirname,'../baseline/fixtures',name),'utf8');
+// Self-contained fixture routing: regular 'npm ci && npm run test:browser' needs
+// no baseline-only D3/TopoJSON npm installation. Other browser suites likewise
+// use their existing CDN resource loading.
+async function deterministic(page){
+  await page.route('**/data/tb-data.js*',route=>route.fulfill({
+    status:200,contentType:'application/javascript',body:fixture('tb-data.js')
+  }));
+  await page.route('**/data/map-data.js*',route=>route.fulfill({
+    status:200,contentType:'application/javascript',body:fixture('map-data.js')
+  }));
+  await page.route('https://fonts.googleapis.com/**',route=>route.abort());
+  await page.route('https://fonts.gstatic.com/**',route=>route.abort());
+}
 
 test('direct first load restores all layers and 3 TB thresholds before any interaction',async({page})=>{
   await deterministic(page);
