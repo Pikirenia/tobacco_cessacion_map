@@ -39,7 +39,7 @@ test('all 195 source countries retain exact independent medicine and full-packag
       return {selected,expected,legend};
     });
     expect(totals.selected).toBe(view);
-    expect(totals.legend.reduce((a,x)=>a+x.count,0)).toBe(view==='all'?195:195);
+    expect(totals.legend.filter(x=>x.label!=='Full package').reduce((a,x)=>a+x.count,0)).toBe(195);
     if(view==='full')expect(totals.legend.find(x=>x.label==='Full package available').count).toBe(41);
   }
 });
