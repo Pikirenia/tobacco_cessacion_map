@@ -25,6 +25,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: npm ci
+      - run: bash scripts/baseline/install-deps.sh
       - run: npx playwright install --with-deps chromium webkit
       - name: Capture independent PR3 visual references
         if: github.event_name == 'push' && github.ref == 'refs/heads/optimization-mobile-ux'
