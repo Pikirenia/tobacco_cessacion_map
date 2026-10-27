@@ -65,7 +65,8 @@ test('PR5: study country fills, status counts and TB threshold remain unchanged'
         const d=DATA[node.__data__.id];
         const cssVariable=expected[node.__data__.id]==='nd'?'--nodata':'--'+expected[node.__data__.id];
         const color=getComputedStyle(document.documentElement).getPropertyValue(cssVariable).trim();
-        if(node.style.fill!==color)failures.push({id:node.__data__.id,actual:node.style.fill,expected:color});
+        const probe=document.createElement('span');probe.style.fill=color;
+        if(node.style.fill!==probe.style.fill)failures.push({id:node.__data__.id,actual:node.style.fill,expected:probe.style.fill});
       }
       return {failures,counts:Object.values(expected).reduce((a,k)=>(a[k]=(a[k]||0)+1,a),{}),total:Object.keys(expected).length};
     });
