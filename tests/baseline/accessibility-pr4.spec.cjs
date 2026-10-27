@@ -74,15 +74,23 @@ test('table renders all countries from validated map data; missing is not zero',
       missingCount:trs.filter(r=>r.textContent.includes('No data')).length,
       zeroTB:[...trs].filter(r=>r.cells[6].textContent==='0'||r.cells[7].textContent==='0').length};
   });
-  expect(summary.rows).toBe(summary.source);
+  expect(summary.source).toBe(195);
+  expect(summary.rows).toBe(25);
   expect(summary.first).toBe('Afghanistan');
   expect(summary.missingCount).toBeGreaterThan(0);
   await page.locator('#countryTableSearch').fill('Poland');
   await expect(page.locator('#countryTable tbody tr')).toHaveCount(1);
   await expect(page.locator('#countryTable tbody tr th')).toHaveText('Poland');
-  await expect(page.locator('#countryTableCount')).toContainText('1 of');
+  await expect(page.locator('#countryTableCount')).toContainText('1 of 1');
   await page.locator('#countryTableSearch').fill('');
-  await expect(page.locator('#countryTable tbody tr')).toHaveCount(summary.source);
+  await expect(page.locator('#countryTable tbody tr')).toHaveCount(25);
+  const all=new Set();
+  for(let p=0;p<8;p++){
+    for(const name of await page.locator('#countryTable tbody tr th').allTextContents())all.add(name);
+    if(p<7)await page.locator('#tableNext').click();
+  }
+  expect(all.size).toBe(summary.source);
+  await expect(page.locator('#tableNext')).toBeDisabled();
   await expect(page.locator('#countryTable [data-key="name"]')).toHaveAttribute('aria-sort','ascending');
   await page.locator('#countryTable [data-sort="name"]').click();
   await expect(page.locator('#countryTable [data-key="name"]')).toHaveAttribute('aria-sort','descending');
@@ -100,7 +108,7 @@ test('table sort and search work by keyboard without hundreds of SVG tab stops',
   expect(tabStops).toBe(0);
   await page.locator('#countryTableSearch').focus();
   await page.keyboard.type('United');
-  await expect(page.locator('#countryTableCount')).toContainText('countries shown');
+  await expect(page.locator('#countryTableCount')).toContainText('matching countries');
   const shown=await page.locator('#countryTable tbody tr').count();
   expect(shown).toBeGreaterThan(0);
   expect(shown).toBeLessThan(195);
