@@ -43,7 +43,7 @@ async function state(page, name) {
   } else {
     await page.locator('.map-mode [data-mode="tb-incidence"]').click();
     await page.locator('#tbColorBy').selectOption('access');
-    await page.locator('#tbCutoff').selectOption(name.slice(-3));
+    await page.locator('#tbThresholds [data-cutoff="' + name.slice(-3) + '"]').click();
     await expect(page.locator('#tbMeta')).toContainText('>' + name.slice(-3));
   }
   await expect(page.locator('#legend button').first()).toBeVisible();
