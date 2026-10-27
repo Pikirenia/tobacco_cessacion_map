@@ -99,7 +99,8 @@ test('country search, tooltip, zoom and refresh are preserved', async ({page}) =
   await page.locator('#q').fill('Poland');
   await page.locator('#q').dispatchEvent('change');
   await expect(page.locator('#tip.on h2')).toHaveText('Poland');
-  await expect(page.locator('#tip')).toHaveAttribute('aria-label','Country details');
+  // PR4 gives each dialog an accessible, country-specific name via aria-labelledby.
+  await expect(page.getByRole('dialog',{name:'Poland'})).toHaveAttribute('aria-labelledby','countryTipTitle');
   await page.keyboard.press('Escape');
   await expect(page.locator('#tip')).not.toHaveClass(/on/);
   await page.locator('#zin').click();
