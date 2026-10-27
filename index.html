@@ -19,6 +19,7 @@
 <nav class="feedback-nav" aria-label="Contribute"><a class="button-link" href="feedback/">Submit country feedback</a></nav>
 
 <main id="main-content">
+<div id="resourceNotice" class="resource-notice" role="alert" hidden><span class="resource-message"></span> <button type="button" onclick="window.location.reload()">Retry loading</button></div>
 <section class="map-toolbar" aria-label="Map controls">
   <div class="toolbar-layer">
     <span class="toolbar-label" id="mapLayerLabel">Map layer</span>
@@ -170,6 +171,59 @@
 
 <div class="tip" id="tip" role="dialog" aria-labelledby="countryTipTitle" aria-hidden="true" tabindex="-1"><button class="x" type="button" aria-label="Close">×</button><div class="body"></div></div>
 
+<script>
+/* GitHub Pages resource recovery. No external library is needed for diagnostics. */
+window.__mapBoot=(function(){
+  let ready=false;
+  const banner=()=>document.getElementById("resourceNotice");
+  function show(message){
+    const notice=banner();
+    if(!notice)return;
+    notice.hidden=false;
+    notice.querySelector(".resource-message").textContent=message;
+  }
+  function fallback(){
+    if(ready || typeof DATA==="undefined")return;
+    const body=document.querySelector("#countryTable tbody");
+    if(!body || body.children.length)return;
+    const tb=typeof TB_DATA!=="undefined"&&TB_DATA.countries?TB_DATA.countries:{};
+    const status={A:"Available",U:"Unavailable",X:"Uncertain"};
+    const frag=document.createDocumentFragment();
+    for(const d of Object.values(DATA).sort((a,b)=>a.n.localeCompare(b.n))){
+      const tr=document.createElement("tr");
+      const full=d.r[0]==="A"&&d.r[3]==="A"&&(d.r[1]==="A"||d.r[2]==="A");
+      const knownMissing=d.r[0]==="U"||d.r[3]==="U"||(d.r[1]==="U"&&d.r[2]==="U");
+      const row=tb[d.i]||{};
+      for(const value of [d.n,...d.r.split("").map(x=>status[x]),full?"Available":knownMissing?"Unavailable":"Uncertain",
+        row.incidence??"No data",row.smoking??"No data"]){
+        const cell=document.createElement(tr.children.length?"td":"th");
+        if(!tr.children.length)cell.scope="row";
+        cell.textContent=value;
+        tr.appendChild(cell);
+      }
+      frag.appendChild(tr);
+    }
+    body.replaceChildren(frag);
+    document.getElementById("countryTableCount").textContent="Showing basic country table while the map is unavailable.";
+    const pag=document.querySelector(".country-table-pagination");
+    if(pag)pag.hidden=true;
+    const controls=document.querySelector(".country-table-tools");
+    if(controls)controls.querySelectorAll("input,select").forEach(el=>el.disabled=true);
+  }
+  window.addEventListener("error",event=>{
+    const t=event.target;
+    if(t&&t.tagName==="SCRIPT")show("A required script could not load: "+(t.src.split("/").pop()||"unknown script")+". You can retry. If the map stays unavailable, use the country data table below.");
+    else if(event.error)show("An application error prevented part of the map from working. Retry loading the page. Country information remains available where possible.");
+  },true);
+  window.addEventListener("load",()=>{
+    if(!ready){
+      fallback();
+      show("The interactive map could not initialize. Use the basic country data table below or retry loading the page.");
+    }
+  });
+  return {show,markReady(){ready=true;},isReady(){return ready;}};
+})();
+</script>
 <script src="data/map-data.js" defer></script>
 <script src="data/tb-data.js?v=tb-20261023-2" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js" defer></script>
