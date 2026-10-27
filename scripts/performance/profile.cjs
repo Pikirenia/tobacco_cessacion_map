@@ -103,6 +103,24 @@ async function main(){
     await context.close();
    }
   }
+  // A diagnostic trace is captured in a separate context, outside the measured repetitions.
+  const traceContext=await browser.newContext({viewport:{width:375,height:900},reducedMotion:'reduce'});
+  await traceContext.route('https://cdnjs.cloudflare.com/ajax/libs/d3/**',r=>r.fulfill({status:200,contentType:'application/javascript',body:d3Source}));
+  await traceContext.route('https://cdn.jsdelivr.net/npm/topojson-client@**',r=>r.fulfill({status:200,contentType:'application/javascript',body:topoSource}));
+  await traceContext.route('https://fonts.googleapis.com/**',r=>r.abort());
+  await traceContext.route('https://fonts.gstatic.com/**',r=>r.abort());
+  await traceContext.route('**/assets/map.js*',r=>r.fulfill({status:200,contentType:'application/javascript',body:instrumented}));
+  fs.mkdirSync(path.join(root,'performance-artifacts'),{recursive:true});
+  await traceContext.tracing.start({screenshots:true,snapshots:true,sources:true});
+  const tracePage=await traceContext.newPage();
+  await tracePage.goto(url,{waitUntil:'load'});
+  await tracePage.locator('.map-mode [data-mode="tb-incidence"]').click();
+  await tracePage.locator('#tbColorBy').selectOption('access');
+  await tracePage.locator('#tbThresholds [data-cutoff="400"]').click();
+  await tracePage.locator('#q').fill('Poland');
+  await tracePage.locator('#q').dispatchEvent('change');
+  await traceContext.tracing.stop({path:path.join(root,'performance-artifacts','interaction-trace.zip')});
+  await traceContext.close();
  }finally{await browser.close()}
  const grouped={};
  for(const width of [375,1280]){
