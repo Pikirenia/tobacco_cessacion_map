@@ -54,6 +54,11 @@ class WHOValidation(unittest.TestCase):
         with self.assertRaises(tb.ValidationError):
             tb.incidence_by_year([inc("PL2", "12")])
 
+    def test_ambiguous_numeric_grouping_is_rejected(self):
+        self.assertEqual(tb.numerical("1,234.5"), 1234.5)
+        with self.assertRaisesRegex(tb.ValidationError, "Ambiguous"):
+            tb.numerical("12,5")
+
     def test_missing_distinct_from_zero_and_no_indicator_substitution(self):
         self.assertIsNone(tb.numerical(""))
         self.assertEqual(tb.numerical("0"), 0)
