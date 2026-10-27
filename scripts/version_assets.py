@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 REFERENCES = {
     "index.html": (
         "assets/site.css", "data/map-data.js", "data/tb-data.js",
-        "data/world-topology.js", "assets/map.js",
+        "data/world-topology.js", "assets/share-state.js", "assets/map.js",
     ),
     "feedback/index.html": (
         "../assets/site.css", "../data/map-data.js",

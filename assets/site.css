@@ -251,3 +251,12 @@ footer{padding-top:4px}
 .resource-notice[hidden]{display:none}
 .resource-notice button{border:1px solid var(--line);border-radius:6px;padding:7px 12px;background:var(--panel);color:var(--ink);cursor:pointer}
 .resource-notice button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+/* PR7: lightweight view sharing, no third-party dependencies. */
+.share-controls{display:flex;align-items:center;flex-wrap:wrap;gap:9px 14px;min-width:0}
+.share-button{font:inherit;font-size:.86rem;font-weight:600;color:var(--link);background:var(--panel);border:1px solid var(--line);border-radius:8px;min-height:40px;padding:8px 13px;cursor:pointer}
+.share-button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+#shareStatus{font-size:.84rem;color:var(--muted)}
+#shareFallback{flex:1 1 100%;min-width:0}
+#shareFallback label{display:block;font-size:.84rem;font-weight:600}
+#shareURL{display:block;width:min(100%,620px);min-width:0;margin-top:4px;font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px}
