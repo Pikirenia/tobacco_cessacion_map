@@ -172,7 +172,7 @@ const isMobile=()=>matchMedia("(max-width:640px)").matches;
 const reduced=()=>matchMedia("(prefers-reduced-motion:reduce)").matches;
 const zoom=d3.zoom().scaleExtent([1,24]).translateExtent([[0,0],[W,H]])
   .filter(e=>{
-    if(e.type==="wheel" && isMobile()) return false; // prevent accidental scroll-wheel zoom
+    if(e.type==="wheel") return e.ctrlKey; // Normal scrolling moves the page; Ctrl+wheel (including trackpad pinch) zooms the map
     if(e.type.startsWith("touch")) return e.touches && e.touches.length>=2;
     return !e.button;
   })
