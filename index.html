@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/site.css?v=desktop-ui-pr2">
+<link rel="stylesheet" href="assets/site.css?v=mobile-ux-pr3">
 </head>
 <body>
 <div class="wrap">
@@ -94,16 +94,17 @@
 </section>
 
 <div class="mapbox" id="mapbox">
-  <svg id="map" role="img" aria-label="World map of smoking cessation medicine availability"></svg>
+  <svg id="map" role="img" aria-label="World map of smoking cessation medicine availability" preserveAspectRatio="xMidYMid meet"></svg>
   <div class="zoom">
     <button type="button" id="zin" aria-label="Zoom in">+</button>
     <button type="button" id="zout" aria-label="Zoom out">−</button>
     <button type="button" id="zreset" aria-label="Reset view">⟲</button>
+    <button type="button" id="zoverview" aria-label="Show whole world" aria-pressed="false" title="Toggle whole world view">World</button>
   </div>
 </div>
 <ul class="legend" id="legend"></ul>
 <p id="tbMeta" class="hint" aria-live="polite" hidden></p>
-<p class="hint">Select a legend item to highlight its countries. In TB incidence, choose "Medicine access comparison" to colour countries above a selected incidence threshold by cessation medicine availability. Other countries are muted. Small island states are shown as dots. Drag to pan, pinch or scroll to zoom.</p>
+<p class="hint">Select a legend item to highlight its countries. In TB incidence, choose "Medicine access comparison" to colour countries above a selected incidence threshold by cessation medicine availability. Other countries are muted. Small island states are shown as dots. On mobile, scroll with one finger and use two fingers to manipulate the map. Use World for the full map. On desktop, drag to pan or scroll to zoom.</p>
 
 <section class="notes">
   <p><b>Retail status</b> reflects practical consumer availability based on the latest information received: a medicine counts as available when at least one of two independent, consumer-facing retail sources shows a current way to buy, order or reserve it. Unavailable means both sources gave a confirmed negative result; uncertain means neither condition was met. Bupropion counts as available even where it is marketed only as an antidepressant.</p>
@@ -119,13 +120,13 @@
 <p class="credit">Original data and text: <a href="https://creativecommons.org/licenses/by/4.0/" rel="license">CC BY 4.0</a>. Code: <a href="https://github.com/Pikirenia/tobacco_cessacion_map/blob/main/LICENSE">MIT</a>. <a href="https://github.com/Pikirenia/tobacco_cessacion_map/blob/main/THIRD_PARTY_NOTICES.md">Third-party terms</a>.</p>
 </div>
 
-<div class="tip" id="tip" role="dialog" aria-label="Country details" aria-live="polite"><button class="x" type="button" aria-label="Close">×</button><div class="body"></div></div>
+<div class="tip" id="tip" role="dialog" aria-label="Country details" aria-hidden="true" tabindex="-1"><button class="x" type="button" aria-label="Close">×</button><div class="body"></div></div>
 
 <script src="data/map-data.js" defer></script>
 <script src="data/tb-data.js?v=tb-20261023-2" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js" defer></script>
 <script src="data/world-topology.js" defer></script>
-<script src="assets/map.js?v=desktop-ui-pr2" defer></script>
+<script src="assets/map.js?v=mobile-ux-pr3" defer></script>
 </body>
 </html>
