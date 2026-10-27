@@ -7,9 +7,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/site.css?v=mobile-ux-pr3">
+<link rel="stylesheet" href="assets/site.css?v=accessibility-pr4">
 </head>
 <body>
+<a class="skip-link" href="#countryData">Skip interactive map to country data</a>
 <div class="wrap">
 <header>
   <h1>Smoking cessation medicines and tuberculosis</h1>
@@ -93,8 +94,9 @@
   </div>
 </section>
 
+<section class="map-panel" aria-label="Geographic exploration">
 <div class="mapbox" id="mapbox">
-  <svg id="map" role="group" aria-label="World map of smoking cessation medicine availability" preserveAspectRatio="xMidYMid meet"></svg>
+  <svg id="map" role="img" aria-label="World map of smoking cessation medicine availability" aria-describedby="mapAlternative" preserveAspectRatio="xMidYMid meet"></svg>
   <div class="zoom">
     <button type="button" id="zin" aria-label="Zoom in">+</button>
     <button type="button" id="zout" aria-label="Zoom out">−</button>
@@ -102,11 +104,37 @@
     <button type="button" id="zoverview" aria-label="Show whole world" aria-pressed="false" title="Toggle whole world view">World</button>
   </div>
 </div>
-<ul class="legend" id="legend"></ul>
+<ul class="legend" id="legend" aria-label="Interactive map legend"></ul>
 <p id="tbMeta" class="hint" aria-live="polite" hidden></p>
-<p class="hint">Select a legend item to highlight its countries. In TB incidence, choose "Medicine access comparison" to colour countries above a selected incidence threshold by cessation medicine availability. Other countries are muted. Small island states are shown as dots. On mobile, scroll with one finger and use two fingers to manipulate the map. Use World for the full map. On desktop, drag to pan or scroll to zoom.</p>
+<p class="hint" id="mapAlternative">For a keyboard and screen-reader accessible alternative to the map, use the searchable country data table below. Select a legend item to highlight its countries. In TB incidence, choose "Medicine access comparison" to colour countries above a selected incidence threshold by cessation medicine availability. Other countries are muted. Small island states are shown as dots. On mobile, scroll with one finger and use two fingers to manipulate the map. Use World for the full map. On desktop, drag to pan or scroll to zoom.</p>
+</section>
 
-<section class="notes">
+<section id="countryData" class="country-data" aria-labelledby="countryDataTitle">
+  <h2 id="countryDataTitle">Country data table</h2>
+  <p id="countryTableHelp">Search and sort all study countries without using the geographic map. Available, unavailable and uncertain refer to practical retail access. “No data” means a missing TB estimate, not zero.</p>
+  <div class="country-table-tools">
+    <div class="toolbar-field"><label for="countryTableSearch">Search countries</label><input type="search" id="countryTableSearch" placeholder="Country name" autocomplete="off"></div>
+    <p id="countryTableCount" role="status" aria-live="polite" aria-atomic="true"></p>
+  </div>
+  <div class="country-table-scroll" tabindex="0" role="region" aria-label="Country data results, scroll within this region on narrow screens">
+    <table id="countryTable" aria-describedby="countryTableHelp">
+      <caption>Smoking cessation medicines and tuberculosis, by country</caption>
+      <thead><tr>
+        <th scope="col" data-key="name" aria-sort="ascending"><button type="button" data-sort="name">Country</button></th>
+        <th scope="col" data-key="nrt"><button type="button" data-sort="nrt">NRT</button></th>
+        <th scope="col" data-key="varenicline"><button type="button" data-sort="varenicline">Varenicline</button></th>
+        <th scope="col" data-key="cytisine"><button type="button" data-sort="cytisine">Cytisine</button></th>
+        <th scope="col" data-key="bupropion"><button type="button" data-sort="bupropion">Bupropion</button></th>
+        <th scope="col" data-key="full"><button type="button" data-sort="full">Full package</button></th>
+        <th scope="col" data-key="incidence"><button type="button" data-sort="incidence">TB incidence per 100,000</button></th>
+        <th scope="col" data-key="smoking"><button type="button" data-sort="smoking">Smoking-attributable TB cases</button></th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+
+<section class="notes" aria-label="Methods and data interpretation">
   <p><b>Retail status</b> reflects practical consumer availability based on the latest information received: a medicine counts as available when at least one of two independent, consumer-facing retail sources shows a current way to buy, order or reserve it. Unavailable means both sources gave a confirmed negative result; uncertain means neither condition was met. Bupropion counts as available even where it is marketed only as an antidepressant.</p>
   <p><b>No data</b> (white) marks countries where the status of all four medicines is uncertain; in most of them the medicines are probably not available through open retail channels. Grey areas are territories outside the 195-country study.</p>
   <p><b>WHO columns</b> show what each country reported to WHO for 2024: whether the medicine is legally sold, its dispensing category (OTC or Rx) and whether its cost is reimbursed. WHO data describe legal status, not current stock, and may differ from retail findings.</p>
@@ -116,17 +144,19 @@
   <p><b>WHO TB sources:</b> <a href="https://extranet.who.int/tme/generateCSV.asp?ds=estimates">TB burden estimates</a> and <a href="https://extranet.who.int/tme/generateCSV.asp?ds=estimates_age_sex">incidence disaggregated by risk factors</a>. <a href="https://www.who.int/teams/global-programme-on-tuberculosis-and-lung-health/data">WHO documentation and terms</a>. Estimates are synchronized automatically and may be retrospectively revised.</p>
 </section>
 </main>
+<footer aria-label="Project credits and licenses">
 <p class="credit">Created and maintained by PhD, MD Uladzimir Pikirenia (<a href="mailto:pikireniauladzimir@gmail.com">pikireniauladzimir@gmail.com</a>)</p>
 <p class="credit">Original data and text: <a href="https://creativecommons.org/licenses/by/4.0/" rel="license">CC BY 4.0</a>. Code: <a href="https://github.com/Pikirenia/tobacco_cessacion_map/blob/main/LICENSE">MIT</a>. <a href="https://github.com/Pikirenia/tobacco_cessacion_map/blob/main/THIRD_PARTY_NOTICES.md">Third-party terms</a>.</p>
+</footer>
 </div>
 
-<div class="tip" id="tip" role="dialog" aria-label="Country details" aria-hidden="true" tabindex="-1"><button class="x" type="button" aria-label="Close">×</button><div class="body"></div></div>
+<div class="tip" id="tip" role="dialog" aria-labelledby="countryTipTitle" aria-hidden="true" tabindex="-1"><button class="x" type="button" aria-label="Close">×</button><div class="body"></div></div>
 
 <script src="data/map-data.js" defer></script>
 <script src="data/tb-data.js?v=tb-20261023-2" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js" defer></script>
 <script src="data/world-topology.js" defer></script>
-<script src="assets/map.js?v=mobile-ux-pr3" defer></script>
+<script src="assets/map.js?v=accessibility-pr4" defer></script>
 </body>
 </html>
