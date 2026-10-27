@@ -19,9 +19,9 @@ Only the interactive map's HTML/CSS, TB threshold-control wiring, browser tests,
 
 **Before:** PR 1 committed baseline images under `tests/baseline/visual.spec.cjs-snapshots/`, captured in all six map states at 320/375/390/768/1024/1280/1440 px and in both themes. They are retained unchanged.
 
-**After:** Layout-sensitive full-page screenshots have a `-desktop-v2-page` suffix, stored beside the originals without replacing them. The dedicated `Desktop UI PR 2 regression and screenshots` workflow captures these using the same Ubuntu 24.04 / pinned Chromium + Arial fallback environment. New functional tests attach additional 1280px and 1920px full-page screenshots for Medicines and TB comparison in light and dark modes to the test artifact. Map-only snapshots continue to compare against the immutable PR 1 references.
+**After:** All six map states have new `-desktop-v2-map` snapshots, and layout-sensitive full-page screenshots have a `-desktop-v2-page` suffix, stored beside the originals without replacing them. The dedicated `Desktop UI PR 2 regression and screenshots` workflow captures these using the same Ubuntu 24.04 / pinned Chromium + Arial fallback environment. New functional tests attach additional 1280px and 1920px full-page screenshots for Medicines and TB comparison in light and dark modes to the test artifact. Versioned PR 2 map snapshots compare against post-change references; the original PR 1 map and page PNGs are immutable and remain available for direct before/after review.
 
-Compare screenshot pairs at the same viewport, theme, and scenario; the new filenames are distinguished solely by `-desktop-v2-page`. Do not compare screenshot pixel output from this harness directly to an unconstrained production screenshot with Public Sans.
+Compare screenshot pairs at the same viewport, theme, and scenario; the new filenames are distinguished by `-desktop-v2-map` or `-desktop-v2-page`. Do not compare screenshot pixel output from this harness directly to an unconstrained production screenshot with Public Sans.
 
 ## Verification matrix
 
