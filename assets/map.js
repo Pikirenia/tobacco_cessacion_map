@@ -2,7 +2,7 @@ if(typeof DATA==="undefined" || !DATA || Object.keys(DATA).length===0)throw new 
 if(typeof d3==="undefined")throw new Error("D3 failed to load");
 if(typeof topojson==="undefined")throw new Error("TopoJSON library failed to load");
 if(typeof TOPO==="undefined" || !TOPO.objects || !TOPO.objects.countries)throw new Error("Geographic topology unavailable");
-const hasWHO=typeof TB_DATA!=="undefined" && TB_DATA && Number.isInteger(TB_DATA.year) && TB_DATA.countries && Object.keys(TB_DATA.countries).length>=120;
+const hasWHO=typeof TB_DATA!=="undefined" && TB_DATA && Number.isInteger(TB_DATA.year) && TB_DATA.countries && Object.keys(TB_DATA.countries).length>0;
 if(!hasWHO && window.__mapBoot)window.__mapBoot.show("WHO tuberculosis estimates could not be loaded. Medicine availability remains usable; TB values are shown as No data until you retry.");
 const DRUGS=["NRT","Varenicline","Cytisine","Bupropion"];
 const RET={A:"Available",U:"Unavailable",X:"Uncertain"};
