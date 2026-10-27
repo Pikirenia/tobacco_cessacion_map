@@ -44,7 +44,7 @@ for(const width of widths)for(const scheme of ['light','dark'])for(const orient 
      await expect(page.locator('#map')).toHaveAttribute('preserveAspectRatio','xMidYMid meet');
      await page.locator('#zoverview').click();
    }
-   await expect(page.locator('#mapbox')).toHaveScreenshot(`${width}-${scheme}-${orient}.png`);
+   await expect(page.locator('#mapbox')).toHaveScreenshot(`${width}-${scheme}-${orient}-accessibility-pr4.png`);
    await page.locator('.map-mode [data-mode="tb-incidence"]').click();
    await page.locator('#tbColorBy').selectOption('access');
    for(const cutoff of ['100','200','400']){

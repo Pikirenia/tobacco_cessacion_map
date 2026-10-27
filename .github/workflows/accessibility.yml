@@ -1,0 +1,40 @@
+name: PR4 accessibility regressions and candidate screenshots
+on:
+  push:
+    branches: ['optimization-accessibility']
+  pull_request:
+    branches: ['optimization']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  accessibility:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: bash scripts/baseline/install-deps.sh
+      - run: npx playwright install --with-deps chromium
+      - name: Verify accessibility regressions and capture review candidates
+        run: npx playwright test -c playwright.baseline.config.cjs tests/baseline/accessibility-pr4.spec.cjs
+      - name: Verify original nonvisual functionality and data
+        if: always()
+        run: |
+          npm test
+          npm run check:data
+      - name: Upload axe reports and candidate PR4 screenshots (do not approve automatically)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr4-accessibility-evidence
+          path: |
+            baseline-artifacts/
+          retention-days: 30
