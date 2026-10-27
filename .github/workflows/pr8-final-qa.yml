@@ -1,0 +1,180 @@
+name: PR8 final integrated QA (no deployment)
+on:
+  pull_request:
+    branches: [optimization]
+permissions:
+  contents: read
+
+jobs:
+  scientific-integrity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Verify scientific sources and 195 country invariants against main
+        run: python3 tests/pr8_integrity.py
+      - name: Check workbook, CSV, country map, WHO snapshot and asset cache
+        run: |
+          npm test
+          npm run check:data
+          python3 tests/data.test.py
+          python3 scripts/version_assets.py
+      - name: Save scientific integrity evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr8-scientific-integrity
+          path: pr8-artifacts/
+          retention-days: 30
+          if-no-files-found: ignore
+
+  functional-and-feedback:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Browser functionality, sharing, resilience, mocked feedback and PR8 boundary checks
+        run: npm run test:browser
+      - name: Save browser traces and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr8-browser-results
+          path: test-results/
+          retention-days: 30
+          if-no-files-found: ignore
+
+  accessibility-and-desktop-visual:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: bash scripts/baseline/install-deps.sh
+      - run: npx playwright install --with-deps chromium
+      - name: Approved historical visuals, axe-core reports and WCAG regression assertions
+        run: npx playwright test -c playwright.baseline.config.cjs
+      - name: Aggregate accessibility results (do not suppress moderate or incomplete)
+        if: always()
+        run: node scripts/baseline/aggregate-a11y.cjs
+      - name: Save accessibility reports, desktop screenshots and traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr8-desktop-and-accessibility
+          path: baseline-artifacts/
+          retention-days: 30
+          if-no-files-found: ignore
+
+  mobile-and-responsive-visual:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: bash scripts/baseline/install-deps.sh
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Mobile Chromium and WebKit, both themes, landscape and original snapshots
+        run: npx playwright test -c playwright.mobile.config.cjs
+      - name: Save responsive screenshots, traces and layout-shift diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr8-mobile-evidence
+          path: mobile-artifacts/
+          retention-days: 30
+          if-no-files-found: ignore
+
+  repeated-performance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: bash scripts/baseline/install-deps.sh
+      - run: npx playwright install --with-deps chromium
+      - name: Start isolated local checkout, never production
+        run: |
+          python3 tests/serve.py >/tmp/pr8-server.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS -o /dev/null http://127.0.0.1:8766/tobacco_cessacion_map/; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - name: Five cold-context desktop and mobile interactive profiles
+        run: node scripts/performance/profile.cjs
+      - name: Five sequential Lighthouse 12.4 desktop and mobile laboratory runs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p performance-artifacts
+          export CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")"
+          URL='http://127.0.0.1:8766/tobacco_cessacion_map/'
+          for device in mobile desktop; do
+            if [ "$device" = desktop ]; then formarg='--preset=desktop'; else formarg='--form-factor=mobile'; fi
+            for i in 1 2 3 4 5; do
+              npx --yes --package=lighthouse@12.4.0 lighthouse "$URL" \
+                --quiet --chrome-flags='--headless --no-sandbox --disable-dev-shm-usage' \
+                --only-categories=performance --output=json \
+                --output-path="performance-artifacts/lighthouse-$device-$i.json" \
+                "$formarg"
+            done
+          done
+          node scripts/performance/summarize-lighthouse.cjs
+      - name: Save measured data (laboratory only; no field INP)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr8-five-run-performance
+          path: performance-artifacts/
+          retention-days: 30
+          if-no-files-found: ignore
