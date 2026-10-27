@@ -455,4 +455,4 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",paint);
 // pageshow also fires after browsers restore persisted form controls and on BFCache return.
 window.addEventListener("pageshow",()=>requestAnimationFrame(paint));
 paint();
-if(window.__mapBoot)window.__mapBoot.markReady();;
+if(window.__mapBoot)window.__mapBoot.markReady();
