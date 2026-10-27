@@ -1,0 +1,61 @@
+name: Mobile UX PR3 cross-browser and screenshots
+on:
+  push:
+    branches: ['optimization-mobile-ux']
+  pull_request:
+    branches: ['optimization']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  mobile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Capture independent PR3 visual references
+        if: github.event_name == 'push' && github.ref == 'refs/heads/optimization-mobile-ux'
+        run: |
+          if [ ! -f tests/mobile/mobile.spec.cjs-snapshots/320-light-portrait-mobile-chromium-linux.png ]; then
+            npx playwright test -c playwright.mobile.config.cjs --grep 'visual layout and TB thresholds' --update-snapshots || true
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add tests/mobile/mobile.spec.cjs-snapshots/ || true
+            if ! git diff --cached --quiet; then
+              git commit -m 'test(mobile): capture PR3 screenshots without changing PR1/PR2'
+              git push origin HEAD:optimization-mobile-ux
+            fi
+          fi
+      - name: Mobile Chromium and WebKit suite
+        run: npx playwright test -c playwright.mobile.config.cjs
+      - name: Existing desktop and tablet baseline suite
+        run: npx playwright test -c playwright.baseline.config.cjs
+      - name: Lighthouse mobile and desktop local/production
+        if: always()
+        run: |
+          python3 tests/serve.py >/tmp/mobile-server.log 2>&1 &
+          sleep 2
+          bash scripts/baseline/lighthouse.sh
+      - name: Upload mobile screenshots, diagnostics and Lighthouse measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-ux-pr3-results
+          path: |
+            mobile-artifacts/
+            baseline-artifacts/
+            tests/mobile/mobile.spec.cjs-snapshots/
+          retention-days: 30
