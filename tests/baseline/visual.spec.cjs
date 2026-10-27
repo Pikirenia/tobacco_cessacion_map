@@ -1,6 +1,7 @@
 const {test, expect} = require('@playwright/test');
 const {deterministic, ready, state} = require('./support.cjs');
-const widths = [320, 375, 390, 768, 1024, 1280, 1440];
+// Historical desktop snapshots remain immutable; mobile regression uses PR3 references.
+const widths = [768, 1024, 1280, 1440];
 const modes = ['medicines', 'tb-incidence', 'tb-smoking', 'compare-100', 'compare-200', 'compare-400'];
 for(const width of widths) for(const scheme of ['light','dark']) {
   test.describe(width + 'px ' + scheme, () => {
