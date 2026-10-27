@@ -237,3 +237,6 @@ footer{padding-top:4px}
   .country-data{margin-top:20px}
 }
 @media(prefers-reduced-motion:reduce){.skip-link{transition:none}}
+
+.country-sort-field{display:none}
+@media(max-width:720px){.country-sort-field{display:flex;flex:1 1 100%;align-items:flex-start}.country-sort-field select{width:100%;max-width:330px;min-height:44px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:8px;font:inherit}}
