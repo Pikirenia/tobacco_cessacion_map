@@ -28,6 +28,7 @@ for(const width of [375,1280])for(const scheme of ['light','dark'])
       const result=await page.evaluate(()=>axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa','best-practice']}}));
       const errors=result.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))}));
       await info.attach('pr4-axe.json',{body:Buffer.from(JSON.stringify({width,scheme,scenario,violations:errors},null,2)),contentType:'application/json'});
+      console.log('PR4_AXE',JSON.stringify({width,scheme,scenario,violations:errors.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.length}))}));
       const bad=errors.filter(v=>['serious','critical'].includes(v.impact));
       expect(bad,JSON.stringify(errors,null,2)).toEqual([]);
     });
@@ -165,5 +166,21 @@ test('candidate PR4 screenshots at 375 and 1280 px in both themes',async({page},
     await visit(page,width,scheme);
     await info.attach(`pr4-${width}-${scheme}-map.png`,{body:await page.locator('#mapbox').screenshot(),contentType:'image/png'});
     await info.attach(`pr4-${width}-${scheme}-table.png`,{body:await page.locator('#countryData').screenshot(),contentType:'image/png'});
+  }
+});
+
+test('320 and 640 CSS-pixel viewport equivalents for 400% and 200% zoom reflow',async({page})=>{
+  for(const width of [320,640]){
+    await visit(page,width,'light');
+    const state=await page.evaluate(()=>({
+      viewport:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth,
+      search:document.getElementById('countryTableSearch').getBoundingClientRect().width,
+      rows:document.querySelectorAll('#countryTable tbody tr').length,
+      sortVisible:getComputedStyle(document.getElementById('countrySort')).display!=='none'
+    }));
+    expect(state.scroll,`document overflow at ${width}px`).toBeLessThanOrEqual(state.viewport+1);
+    expect(state.search).toBeGreaterThan(100);
+    expect(state.rows).toBe(25);
+    expect(state.sortVisible).toBeTruthy();
   }
 });
