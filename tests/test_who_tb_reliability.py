@@ -121,6 +121,16 @@ class WHOValidation(unittest.TestCase):
                     with self.assertRaises(tb.ValidationError):
                         tb.download_csv("https://example.invalid", opener=lambda *a, **k: Response(payload))
 
+    def test_truncated_response_declared_size_is_rejected(self):
+        class PartialResponse:
+            headers = {"Content-Length": "999"}
+            def __enter__(self): return self
+            def __exit__(self, *args): return False
+            def read(self, limit): return b"iso3,year,e_inc_100k\\nPOL,2024,12\\n"
+        with self.assertRaisesRegex(tb.ValidationError, "Truncated WHO response"):
+            tb.download_csv("https://example.invalid/estimate.csv",
+                            opener=lambda *a, **k: PartialResponse())
+
     def test_atomic_write_failed_replace_keeps_previous_snapshot(self):
         with tempfile.TemporaryDirectory() as folder:
             out = Path(folder) / "tb-data.js"
