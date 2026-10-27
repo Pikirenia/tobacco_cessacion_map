@@ -41,6 +41,8 @@ jobs:
           exit 1
       - name: Profile five cold-context runs per viewport
         run: node scripts/performance/profile.cjs
+      - name: Verify geographic fidelity, functional behavior and PR4 visual references
+        run: npx playwright test -c playwright.baseline.config.cjs tests/baseline/performance-pr5.spec.cjs tests/baseline/functional.spec.cjs tests/baseline/visual.spec.cjs
       - name: Lighthouse five sequential mobile and desktop laboratory audits
         shell: bash
         run: |
