@@ -398,6 +398,7 @@ function renderCountryTable(){
   }
   tableBody.replaceChildren(frag);
   tableCount.textContent=items.length+" of "+tableRows.length+" countries shown";
+  document.getElementById("countrySort").value=tableSort+":"+(tableAscending?"asc":"desc");
   for(const th of tableHeaders){
     if(th.dataset.key===tableSort)th.setAttribute("aria-sort",tableAscending?"ascending":"descending");
     else th.removeAttribute("aria-sort");
@@ -415,6 +416,17 @@ document.querySelectorAll("#countryTable [data-sort]").forEach(button=>{
     renderCountryTable();
   });
 });
+document.getElementById("countrySort").addEventListener("change",function(){
+  const [key,direction]=this.value.split(":");
+  tableSort=key;tableAscending=direction==="asc";
+  renderCountryTable();
+});
+function responsiveSortAccessibility(){
+  const mobile=matchMedia("(max-width:720px)").matches;
+  document.querySelectorAll("#countryTable [data-sort]").forEach(button=>button.tabIndex=mobile?-1:0);
+}
+matchMedia("(max-width:720px)").addEventListener("change",responsiveSortAccessibility);
+responsiveSortAccessibility();
 renderCountryTable();
 
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change",paint);
