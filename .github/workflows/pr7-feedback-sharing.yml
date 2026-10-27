@@ -1,0 +1,40 @@
+name: PR7 feedback and sharing validation
+on:
+  pull_request:
+    branches: ['optimization']
+  push:
+    branches: ['optimization-feedback-and-sharing']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  feedback-sharing:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: bash scripts/baseline/install-deps.sh
+      - name: Backend mocks, URL serializer and scientific checks
+        run: |
+          npm test
+          npm run check:data
+          python3 tests/data.test.py
+          python3 scripts/version_assets.py
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Browser PR7 regression and screenshot comparison evidence
+        run: npx playwright test tests/browser/sharing.spec.cjs
+      - name: Upload PR7 screenshots, traces and results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pr7-feedback-sharing-evidence
+          path: test-results/
+          retention-days: 30

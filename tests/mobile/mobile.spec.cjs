@@ -44,7 +44,11 @@ for(const width of widths)for(const scheme of ['light','dark'])for(const orient 
      await expect(page.locator('#map')).toHaveAttribute('preserveAspectRatio','xMidYMid meet');
      await page.locator('#zoverview').click();
    }
-   await expect(page.locator('#mapbox')).toHaveScreenshot(`${width}-${scheme}-${orient}-accessibility-pr4.png`);
+   // The PR4 320px WebKit reference accidentally captured an unpinned hover
+   // tooltip. Keep historical references untouched; PR7 has its own clean views.
+   const version=width===320 && info.project.name==='mobile-webkit' ? 'sharing-pr7' : 'accessibility-pr4';
+   if(version==='sharing-pr7')await page.evaluate(()=>{if(!pinned)hide();});
+   await expect(page.locator('#mapbox')).toHaveScreenshot(`${width}-${scheme}-${orient}-${version}.png`);
    await page.locator('.map-mode [data-mode="tb-incidence"]').click();
    await page.locator('#tbColorBy').selectOption('access');
    for(const cutoff of ['100','200','400']){

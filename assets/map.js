@@ -155,7 +155,7 @@ function paint(){
     return li;
   });
   const buttons=items.select("button").attr("aria-pressed",([c])=>focusClass===c)
-    .on("click",(event,[c])=>{focusClass=focusClass===c?null:c;paint()});
+    .on("click",(event,[c])=>{focusClass=focusClass===c?null:c;paint();recordMapState();});
   buttons.select(".sw").style("background",([c])=>c==="full"?"linear-gradient(135deg, var(--c3) 0 50%, var(--c4) 50% 100%)":fillFor(c));
   buttons.select(".label").text(([,label])=>label);
   buttons.select(".n").text(([c])=>counts[c]||0);
@@ -256,6 +256,7 @@ function show(d,el,x,y,pin){
   if(pin)tip.setAttribute("aria-modal",String(narrow()));else tip.removeAttribute("aria-modal");
   if(!(pin&&narrow())) place(x,y); else {tip.style.left="";tip.style.top="";}
   pinned=pin?d:null;
+  if(pin) recordMapState();
   if(pin){
     if(!focusSource) focusSource=document.activeElement;
     tip.querySelector(".x").focus({preventScroll:true});
@@ -274,7 +275,7 @@ window.addEventListener("resize",()=>{
   if(pinned) hide();
   setOverview(false);strokes();
 });
-tip.querySelector(".x").addEventListener("click",hide);
+tip.querySelector(".x").addEventListener("click",()=>{hide();recordMapState();});
 function bind(sel,getD){
   sel.on("pointermove",function(e){
     if(e.pointerType!=="mouse"||pinned)return;
@@ -299,9 +300,9 @@ function bind(sel,getD){
 bind(countries,el=>DATA[d3.select(el).datum().id]);
 bind(dots,el=>DATA[d3.select(el).datum().id]);
 bind(targets,el=>DATA[d3.select(el).datum().id]);
-svg.on("click",()=>{ if(pinned) hide() });
+svg.on("click",()=>{ if(pinned){hide();recordMapState();} });
 document.addEventListener("keydown",e=>{
-  if(e.key==="Escape" && pinned){e.preventDefault();hide();return;}
+  if(e.key==="Escape" && pinned){e.preventDefault();hide();recordMapState();return;}
   if(e.key!=="Tab" || !pinned || !narrow())return;
   const controls=[...tip.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])')]
     .filter(el=>el.getClientRects().length);
@@ -318,13 +319,13 @@ document.addEventListener("keydown",e=>{
 d3.selectAll(".map-mode button").on("click",function(){
   mode=this.dataset.mode;focusClass=null;hide();
   d3.selectAll(".map-mode button").attr("aria-pressed",function(){return this.dataset.mode===mode;});
-  paint();
+  paint();recordMapState();
 });
 document.getElementById("tbColorBy").addEventListener("change",function(){
-  tbColorBy=this.value;focusClass=null;hide();paint();
+  tbColorBy=this.value;focusClass=null;hide();paint();recordMapState();
 });
 document.getElementById("tbCutoff").addEventListener("change",function(){
-  tbCutoff=Number(this.value);focusClass=null;hide();paint();
+  tbCutoff=Number(this.value);focusClass=null;hide();paint();recordMapState();
 });
 d3.selectAll("#tbThresholds button").on("click",function(){
   const native=document.getElementById("tbCutoff");
@@ -332,35 +333,119 @@ d3.selectAll("#tbThresholds button").on("click",function(){
     native.value=this.dataset.cutoff;
     tbCutoff=Number(native.value);focusClass=null;hide();
   }
-  paint();
+  paint();recordMapState();
 });
-document.getElementById("tbMedicine").addEventListener("change",function(){tbDrug=this.value;paint();});
-document.getElementById("tbStatus").addEventListener("change",function(){tbStatus=this.value;paint();});
+document.getElementById("tbMedicine").addEventListener("change",function(){tbDrug=this.value;paint();recordMapState();});
+document.getElementById("tbStatus").addEventListener("change",function(){tbStatus=this.value;paint();recordMapState();});
 
 // view switch
 d3.selectAll("#medicineViews button").on("click",function(){
   const btn=this; view=btn.dataset.view; focusClass=null; hide();
   d3.selectAll("#medicineViews button").attr("aria-pressed",function(){return this===btn});
-  paint();
+  paint();recordMapState();
 });
 
 // search
 const byName={};
 Object.entries(DATA).forEach(([id,d])=>byName[d.n.toLowerCase()]=id);
 document.getElementById("countries").innerHTML=Object.values(DATA).map(d=>d.n).sort().map(n=>`<option value="${n}">`).join("");
-document.getElementById("q").addEventListener("change",function(){
-  const id=byName[this.value.trim().toLowerCase()]; if(!id) return;
-  const d=DATA[id]; const f=feats.find(f=>f.id===id);
+const byISO = Object.fromEntries(Object.entries(DATA).map(([id, d]) => [d.i, id]));
+let restoringMapState = false;
+function snapshotMapState() {
+  return {
+    layer:mode, view, display:document.getElementById("tbColorBy").value,
+    threshold:document.getElementById("tbCutoff").value,
+    medicine:document.getElementById("tbMedicine").value,
+    status:document.getElementById("tbStatus").value,
+    country:pinned ? pinned.i : ""
+  };
+}
+function mapURL() {
+  const url = new URL(window.location.href);
+  url.search = window.MapShareState.serialize(snapshotMapState());
+  return url;
+}
+function recordMapState(replace = false) {
+  if (restoringMapState) return;
+  const url = mapURL();
+  if (url.href === window.location.href) return;
+  window.history[replace ? "replaceState" : "pushState"](null, "", url.href);
+}
+function selectCountry(id, immediate = false) {
+  const d=DATA[id]; if(!d)return;
+  const f=feats.find(f=>f.id===id);
   let el,cx,cy,scale;
-  if(f && !d.ll){ const [[x0,y0],[x1,y1]]=path.bounds(f); cx=(x0+x1)/2; cy=(y0+y1)/2; scale=Math.min(8,0.5/Math.max((x1-x0)/W,(y1-y0)/H)); el=countries.filter(q=>q.id===id).node(); }
-  else { const o=dotData.find(o=>o.id===id); [cx,cy]=o.xy; scale=8; el=dots.filter(q=>q.id===id).node(); }
+  if(f && !d.ll){
+    const [[x0,y0],[x1,y1]]=path.bounds(f);
+    cx=(x0+x1)/2;cy=(y0+y1)/2;
+    scale=Math.min(8,0.5/Math.max((x1-x0)/W,(y1-y0)/H));
+    el=countries.filter(q=>q.id===id).node();
+  } else {
+    const o=dotData.find(o=>o.id===id);
+    if(!o)return;
+    [cx,cy]=o.xy;scale=8;el=dots.filter(q=>q.id===id).node();
+  }
+  if(!el)return;
   scale=Math.max(1,scale);
-  focusSource=this;
-  // Instant positioning in reduced-motion mode; otherwise report the selected country after zoom.
+  document.getElementById("q").value=d.n;
+  focusSource=document.getElementById("q");
   const target=d3.zoomIdentity.translate(W/2,H/2).scale(scale).translate(-cx,-cy);
-  const present=()=>{const r=el.getBoundingClientRect();show(d,el,r.left+r.width/2,r.top+r.height/2,true)};
-  if(reduced()){svg.call(zoom.transform,target);present();}
+  const present=()=>{const r=el.getBoundingClientRect();show(d,el,r.left+r.width/2,r.top+r.height/2,true);};
+  if(immediate || reduced()){svg.call(zoom.transform,target);present();}
   else svg.transition().duration(500).call(zoom.transform,target).on("end",present);
+}
+document.getElementById("q").addEventListener("change",function(){
+  const id=byName[this.value.trim().toLowerCase()];
+  if(id)selectCountry(id);
+});
+function restoreMapURL() {
+  restoringMapState=true;
+  try {
+    const state=window.MapShareState.read(window.location.search,new Set(Object.keys(byISO)));
+    if(pinned)hide();
+    mode=state.layer;
+    view=state.view;
+    focusClass=null;
+    document.getElementById("tbColorBy").value=state.display;
+    document.getElementById("tbCutoff").value=state.threshold;
+    document.getElementById("tbMedicine").value=state.medicine;
+    document.getElementById("tbStatus").value=state.status;
+    d3.selectAll(".map-mode button").attr("aria-pressed",function(){return this.dataset.mode===mode;});
+    d3.selectAll("#medicineViews button").attr("aria-pressed",function(){return this.dataset.view===view;});
+    paint();
+    if(state.country)selectCountry(byISO[state.country],true);
+    else {
+      document.getElementById("q").value="";
+      svg.call(zoom.transform,d3.zoomIdentity);
+    }
+  } finally {restoringMapState=false;}
+}
+window.addEventListener("popstate",restoreMapURL);
+const shareButton=document.getElementById("copyViewLink");
+const shareStatus=document.getElementById("shareStatus");
+const shareFallback=document.getElementById("shareFallback");
+const shareInput=document.getElementById("shareURL");
+shareButton.addEventListener("click",async()=>{
+  const text=mapURL().href;
+  shareFallback.hidden=true;
+  try {
+    if(!navigator.clipboard?.writeText)throw new Error("Clipboard unavailable");
+    await navigator.clipboard.writeText(text);
+    shareStatus.textContent="Link copied. It will reopen this map view.";
+  } catch {
+    shareInput.value=text;
+    shareFallback.hidden=false;
+    shareInput.focus();
+    shareInput.select();
+    try {
+      if(document.execCommand("copy")){
+        shareStatus.textContent="Link copied. It will reopen this map view.";
+        shareFallback.hidden=true;
+        return;
+      }
+    } catch { /* Manual copy below. */ }
+    shareStatus.textContent="Select and copy the link below to share this map view.";
+  }
 });
 
 
@@ -454,5 +539,6 @@ renderCountryTable();
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change",paint);
 // pageshow also fires after browsers restore persisted form controls and on BFCache return.
 window.addEventListener("pageshow",()=>requestAnimationFrame(paint));
-paint();
+// URL is authoritative for direct links; no-query pages retain native form restoration.
+if(window.location.search)restoreMapURL();else paint();
 if(window.__mapBoot)window.__mapBoot.markReady();

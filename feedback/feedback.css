@@ -1,21 +1,21 @@
 .feedback-wrap{max-width:980px}
 .back-link{display:inline-block;margin-bottom:20px;color:var(--focus);padding:8px 0}
-.intro{margin-bottom:22px}
+.intro{margin-bottom:16px}
 .intro p{margin-top:10px}
 .helper{font-size:.88rem;color:var(--muted);margin:6px 0 12px}
-.field{margin:22px 0}
+.field{margin:12px 0 18px}
 .field>label{display:block;font-weight:600;margin-bottom:7px}
 select,textarea,input[type="text"]{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;width:100%;min-height:44px}
 textarea{resize:vertical;min-height:120px}
-.medicine-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-.medicine{min-width:0;margin:0;border:1px solid var(--panel-line);border-radius:12px;background:var(--panel);padding:16px}
+.medicine-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.medicine{min-width:0;margin:0;border:1px solid var(--panel-line);border-radius:12px;background:var(--panel);padding:12px 14px}
 .medicine>legend{font-weight:700;padding:0 6px;max-width:100%}
-.question{border:0;padding:0;margin:12px 0 0;min-width:0}
-.question legend{font-weight:600;margin-bottom:4px}
-.choice{display:flex;align-items:center;gap:10px;min-height:44px;cursor:pointer}
+.question{border:0;padding:0;margin:10px 0 0;min-width:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:10px}
+.question legend{font-weight:600;margin-bottom:6px;font-size:.9rem}
+.choice{display:flex;align-items:center;gap:8px;min-width:0;min-height:42px;cursor:pointer;font-size:.9rem;overflow-wrap:anywhere}
 .choice input{margin:0;flex-shrink:0;width:18px;height:18px;accent-color:var(--focus)}
 .question:disabled .choice{opacity:.55;cursor:default}
-.not-applicable{font-size:.85rem;margin:8px 0;color:var(--muted)}
+.not-applicable{font-size:.85rem;margin:6px 0 0;color:var(--muted)}
 .status{padding:12px;border:1px solid var(--line);border-radius:8px;margin:16px 0}
 .actions{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
 .primary{background:var(--ink);color:var(--page)}
@@ -25,3 +25,14 @@ button:disabled{opacity:.6;cursor:wait}
 .thank-you h2{margin-top:0}
 [hidden]{display:none!important}
 @media(max-width:640px){.medicine-grid{grid-template-columns:1fr}.medicine{padding:12px}.actions .primary{width:100%}.credit{overflow-wrap:anywhere}}
+
+/* PR7: compact, accessible step sequence; no changes to submitted fields. */
+.feedback-step{margin:16px 0 22px;min-width:0}
+.feedback-step h2{font-size:1.12rem;margin:0 0 8px;line-height:1.3}
+.feedback-step>.helper{margin-bottom:12px}
+.medicine .question:disabled{display:none}
+.medicine .question:disabled[hidden]{display:none}
+.medicine:focus-within{border-color:var(--focus)}
+.choice:has(input:focus-visible){outline:2px solid var(--focus);outline-offset:2px;border-radius:4px}
+@media(min-width:720px){.medicine-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:380px){.question{column-gap:5px}.choice{font-size:.84rem;gap:6px}}
