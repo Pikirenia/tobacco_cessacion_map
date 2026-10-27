@@ -91,11 +91,13 @@ function paint(){
   refreshPalette();
   const isTB=mode!=="medicines";
   const compare=mode==="tb-incidence"&&tbColorBy==="access";
+  document.getElementById("medicineViewField").hidden=isTB;
   document.getElementById("medicineViews").hidden=isTB;
   document.getElementById("tbIncidenceControls").hidden=mode!=="tb-incidence";
   document.getElementById("tbControls").hidden=!isTB||compare;
-  document.getElementById("tbCutoff").hidden=!compare;
-  document.getElementById("tbCutoffLabel").hidden=!compare;
+  document.getElementById("tbThresholdField").hidden=!compare;
+  // The native select is an invisible restoration mirror; only the segment is interactive.
+  d3.selectAll("#tbThresholds button").attr("aria-pressed",function(){return Number(this.dataset.cutoff)===tbCutoff;});
   const meta=document.getElementById("tbMeta");
   meta.hidden=!isTB;
   meta.textContent=TB.year ? "WHO estimates for "+TB.year+" | Snapshot created: "+(TB.updated||"unknown").slice(0,10)
@@ -233,6 +235,14 @@ document.getElementById("tbColorBy").addEventListener("change",function(){
 });
 document.getElementById("tbCutoff").addEventListener("change",function(){
   tbCutoff=Number(this.value);focusClass=null;hide();paint();
+});
+d3.selectAll("#tbThresholds button").on("click",function(){
+  const native=document.getElementById("tbCutoff");
+  if(native.value!==this.dataset.cutoff){
+    native.value=this.dataset.cutoff;
+    tbCutoff=Number(native.value);focusClass=null;hide();
+  }
+  paint();
 });
 document.getElementById("tbMedicine").addEventListener("change",function(){tbDrug=this.value;paint();});
 document.getElementById("tbStatus").addEventListener("change",function(){tbStatus=this.value;paint();});
