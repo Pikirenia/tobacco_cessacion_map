@@ -129,11 +129,11 @@ function paint(){
     const d=DATA[f.id],el=d3.select(this);
     if(!d){el.attr("style",null);return;}
     const c=classify(d);
-    el.style("fill",fillFor(c)).classed("nd",c==="nd").classed("dim",dim(d,c));
+    el.style("fill",fillFor(c)).classed("nd",c==="nd").classed("acc-one",c==="acc-one").classed("dim",dim(d,c));
   });
   dots.each(function(o){
     const d=DATA[o.id],c=classify(d);
-    d3.select(this).style("fill",fillFor(c)).classed("nd",c==="nd").classed("dim",dim(d,c));
+    d3.select(this).style("fill",fillFor(c)).classed("nd",c==="nd").classed("acc-one",c==="acc-one").classed("dim",dim(d,c));
   });
   const counts={full:0};
   Object.values(DATA).forEach(d=>{const c=classify(d);counts[c]=(counts[c]||0)+1;if(fullSet(d))counts.full++;});
@@ -150,11 +150,12 @@ function paint(){
   buttons.select(".label").text(([,label])=>label);
   buttons.select(".n").text(([c])=>counts[c]||0);
   if(shownData){tipBody.innerHTML=html(shownData);tipSize=null;}
+  strokes();
 }
 function strokes(){
-  countries.style("stroke-width",0.5/k+"px");
+  countries.style("stroke-width",function(){return (this.classList.contains("acc-one")?1.35:0.5)/k+"px";});
   dots.attr("r",(matchMedia("(max-width:640px)").matches?Math.max(3.5,5.5/Math.sqrt(k)):Math.max(2.2,3.6/Math.sqrt(k)))/Math.sqrt(k))
-    .style("stroke-width",0.6/k+"px");
+    .style("stroke-width",function(){return (this.classList.contains("acc-one")?1.35:0.6)/k+"px";});
   targets.attr("r",matchMedia("(max-width:640px)").matches?22/k:10/k);
 }
 const isMobile=()=>matchMedia("(max-width:640px)").matches;
