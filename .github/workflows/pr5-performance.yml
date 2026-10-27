@@ -1,0 +1,56 @@
+name: PR 5 controlled performance laboratory
+on:
+  push:
+    branches: ['optimization-performance']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  profile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: bash scripts/baseline/install-deps.sh
+      - run: npx playwright install --with-deps chromium
+      - name: Serve checkout without publishing
+        run: |
+          python3 tests/serve.py > /tmp/pr5-local-server.log 2>&1 &
+          echo $! > /tmp/pr5-server.pid
+          for i in $(seq 1 30); do
+            if curl -fsS -o /dev/null http://127.0.0.1:8766/tobacco_cessacion_map/; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - name: Profile five cold-context runs per viewport
+        run: node scripts/performance/profile.cjs
+      - name: Lighthouse five sequential mobile and desktop laboratory audits
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p performance-artifacts
+          export CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")"
+          URL='http://127.0.0.1:8766/tobacco_cessacion_map/'
+          for device in mobile desktop; do
+            if [ "$device" = desktop ]; then formarg='--preset=desktop'; else formarg='--form-factor=mobile'; fi
+            for i in 1 2 3 4 5; do
+              npx --yes --package=lighthouse@12.4.0 lighthouse "$URL" \
+                --quiet --chrome-flags='--headless --no-sandbox --disable-dev-shm-usage' \
+                --only-categories=performance --output=json \
+                --output-path="performance-artifacts/lighthouse-$device-$i.json" \
+                "$formarg"
+            done
+          done
+          node scripts/performance/summarize-lighthouse.cjs
+      - name: Upload repeatable lab evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr5-performance-evidence
+          path: performance-artifacts/
+          retention-days: 30
