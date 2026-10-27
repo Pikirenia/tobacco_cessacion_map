@@ -140,7 +140,8 @@ test('map and feedback PR7 visual evidence',async({page},info)=>{
   await deterministic(page);
   await page.goto('./?layer=tb-incidence&display=access&threshold=200');
   await expect(page.locator('#legend button').first()).toBeVisible();
-  await page.screenshot({path:info.outputPath('map-pr7-share.png'),fullPage:true});
+  await page.locator('.map-panel').screenshot({path:info.outputPath('map-pr7-share.png'),animations:'disabled'});
+  await page.locator('.map-toolbar').screenshot({path:info.outputPath('map-pr7-share-controls.png'),animations:'disabled'});
   await page.goto('feedback/');
   await page.locator('#nrt-availability').getByLabel('Available',{exact:true}).check();
   await page.screenshot({path:info.outputPath('feedback-pr7-progressive.png'),fullPage:true});
