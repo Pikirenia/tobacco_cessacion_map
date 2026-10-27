@@ -199,7 +199,7 @@ test('comparison mode works without WHO incidence data and never reports unavail
   await page.goto('./');
   await page.locator('.map-mode [data-mode="tb-incidence"]').click();
   await page.locator('#tbColorBy').selectOption('access');
-  await expect(page.locator('#tbMeta')).toContainText('not yet synchronized');
+  await expect(page.locator('#tbMeta')).toContainText('WHO estimates could not be loaded');
   expect(await page.evaluate(() => tbAccessClass({i:'POL',r:'AAAA'}))).toBe('nd');
   await expect(page.locator('#legend button').last()).toContainText('195');
 });

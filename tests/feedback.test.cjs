@@ -14,7 +14,7 @@ for (const file of ["assets/map.js", "data/world-topology.js", "feedback/feedbac
 }
 const index = fs.readFileSync("index.html", "utf8");
 assert(index.includes('href="feedback/"'));
-assert(index.includes('src="data/map-data.js"'));
+assert(/src="data\/map-data\.js\?v=[a-f0-9]{12}"/.test(index));
 assert(!index.includes("const DATA ="));
 assert(fs.readFileSync("assets/map.js", "utf8").includes('["full","Full package"]'));
 assert(index.includes('data-view="full"'));
