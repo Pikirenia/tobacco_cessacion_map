@@ -7,9 +7,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/site.css?v=tb-access-count-colors-1">
+<link rel="stylesheet" href="assets/site.css?v=4cfe44864015">
 </head>
 <body>
+<a class="skip-link" href="#countryData">Skip interactive map to country data</a>
 <div class="wrap">
 <header>
   <h1>Smoking cessation medicines and tuberculosis</h1>
@@ -17,70 +18,150 @@
 </header>
 <nav class="feedback-nav" aria-label="Contribute"><a class="button-link" href="feedback/">Submit country feedback</a></nav>
 
-<div class="map-mode seg" role="group" aria-label="Map data layer">
-  <button type="button" data-mode="medicines" aria-pressed="true">Medicines</button>
-  <button type="button" data-mode="tb-incidence" aria-pressed="false">TB incidence</button>
-  <button type="button" data-mode="tb-smoking" aria-pressed="false">Smoking-attributable TB</button>
-</div>
-<div class="controls">
-  <div class="seg" id="medicineViews" role="group" aria-label="Medicine availability">
-    <button type="button" data-view="full" aria-pressed="false">Full package</button>
-    <button type="button" data-view="all" aria-pressed="true">All four</button>
-    <button type="button" data-view="0" aria-pressed="false">NRT</button>
-    <button type="button" data-view="1" aria-pressed="false">Varenicline</button>
-    <button type="button" data-view="2" aria-pressed="false">Cytisine</button>
-    <button type="button" data-view="3" aria-pressed="false">Bupropion</button>
+<main id="main-content">
+<div id="resourceNotice" class="resource-notice" role="alert" hidden><span class="resource-message"></span> <button type="button" onclick="window.location.reload()">Retry loading</button></div>
+<section class="map-toolbar" aria-label="Map controls">
+  <div class="toolbar-layer">
+    <span class="toolbar-label" id="mapLayerLabel">Map layer</span>
+    <div class="map-mode seg" role="group" aria-labelledby="mapLayerLabel">
+      <button type="button" data-mode="medicines" aria-pressed="true">Medicines</button>
+      <button type="button" data-mode="tb-incidence" aria-pressed="false">TB incidence</button>
+      <button type="button" data-mode="tb-smoking" aria-pressed="false">Smoking-attributable TB</button>
+    </div>
   </div>
-  <div id="tbIncidenceControls" class="tb-controls" hidden>
-    <label for="tbColorBy">TB incidence display</label>
-    <select id="tbColorBy">
-      <option value="rate">Incidence rate</option>
-      <option value="access">Medicine access comparison</option>
-    </select>
-    <label for="tbCutoff" id="tbCutoffLabel" hidden>Incidence above</label>
-    <select id="tbCutoff" hidden>
-      <option value="100">&gt;100 / 100,000</option>
-      <option value="200">&gt;200 / 100,000</option>
-      <option value="400">&gt;400 / 100,000</option>
-    </select>
+  <div class="controls">
+    <div class="control-settings">
+      <div class="toolbar-field medicine-field" id="medicineViewField">
+        <span class="toolbar-label" id="medicineViewLabel">Medicine availability</span>
+        <div class="seg" id="medicineViews" role="group" aria-labelledby="medicineViewLabel">
+          <button type="button" data-view="full" aria-pressed="false">Full package</button>
+          <button type="button" data-view="all" aria-pressed="true">All four</button>
+          <button type="button" data-view="0" aria-pressed="false">NRT</button>
+          <button type="button" data-view="1" aria-pressed="false">Varenicline</button>
+          <button type="button" data-view="2" aria-pressed="false">Cytisine</button>
+          <button type="button" data-view="3" aria-pressed="false">Bupropion</button>
+        </div>
+      </div>
+      <div id="tbIncidenceControls" class="tb-incidence-controls" hidden>
+        <div class="toolbar-field">
+          <label for="tbColorBy">Visualization</label>
+          <select id="tbColorBy">
+            <option value="rate">Incidence rate</option>
+            <option value="access">Medicine access comparison</option>
+          </select>
+        </div>
+        <div class="toolbar-field" id="tbThresholdField" hidden>
+          <span class="toolbar-label" id="tbCutoffLabel">Incidence above, per 100,000</span>
+          <div class="seg threshold-seg" id="tbThresholds" role="group" aria-labelledby="tbCutoffLabel">
+            <button type="button" data-cutoff="100" aria-pressed="true">&gt; 100</button>
+            <button type="button" data-cutoff="200" aria-pressed="false">&gt; 200</button>
+            <button type="button" data-cutoff="400" aria-pressed="false">&gt; 400</button>
+          </div>
+          <!-- Native state mirror retains browser form restoration and historical test compatibility. -->
+          <select id="tbCutoff" aria-label="Restored incidence threshold" tabindex="-1" hidden>
+            <option value="100">&gt;100 / 100,000</option>
+            <option value="200">&gt;200 / 100,000</option>
+            <option value="400">&gt;400 / 100,000</option>
+          </select>
+        </div>
+      </div>
+      <div id="tbControls" class="tb-controls" hidden>
+        <div class="toolbar-field">
+          <label for="tbMedicine">Highlight by medicine or package</label>
+          <select id="tbMedicine">
+            <option value="full">Full package</option>
+            <option value="any" selected>All countries</option>
+            <option value="0">NRT</option>
+            <option value="1">Varenicline</option>
+            <option value="2">Cytisine</option>
+            <option value="3">Bupropion</option>
+          </select>
+        </div>
+        <div class="toolbar-field">
+          <label for="tbStatus">Retail status</label>
+          <select id="tbStatus">
+            <option value="A">Available</option>
+            <option value="U">Unavailable</option>
+            <option value="X">Uncertain</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="find toolbar-field">
+      <label for="q">Find a country</label>
+      <input id="q" list="countries" autocomplete="off" placeholder="e.g. Poland">
+      <datalist id="countries"></datalist>
+    </div>
   </div>
-  <div id="tbControls" class="tb-controls" hidden>
-    <label for="tbMedicine">Highlight by medicine or package</label>
-    <select id="tbMedicine">
-      <option value="full">Full package</option>
-      <option value="any" selected>All countries</option>
-      <option value="0">NRT</option>
-      <option value="1">Varenicline</option>
-      <option value="2">Cytisine</option>
-      <option value="3">Bupropion</option>
-    </select>
-    <label for="tbStatus">Retail status</label>
-    <select id="tbStatus">
-      <option value="A">Available</option>
-      <option value="U">Unavailable</option>
-      <option value="X">Uncertain</option>
-    </select>
+  <div class="share-controls">
+    <button id="copyViewLink" class="share-button" type="button">Copy link to this view</button>
+    <span id="shareStatus" role="status" aria-live="polite"></span>
+    <div id="shareFallback" hidden>
+      <label for="shareURL">Shareable URL (select and copy)</label>
+      <input id="shareURL" type="text" readonly aria-label="Shareable map URL">
+    </div>
   </div>
-  <div class="find">
-    <label for="q">Find a country</label>
-    <input id="q" list="countries" autocomplete="off" placeholder="e.g. Poland">
-    <datalist id="countries"></datalist>
-  </div>
-</div>
+</section>
 
+<section class="map-panel" aria-label="Geographic exploration">
 <div class="mapbox" id="mapbox">
-  <svg id="map" role="img" aria-label="World map of smoking cessation medicine availability"></svg>
+  <svg id="map" role="img" aria-label="World map of smoking cessation medicine availability" aria-describedby="mapAlternative" preserveAspectRatio="xMidYMid meet"></svg>
   <div class="zoom">
     <button type="button" id="zin" aria-label="Zoom in">+</button>
     <button type="button" id="zout" aria-label="Zoom out">−</button>
     <button type="button" id="zreset" aria-label="Reset view">⟲</button>
+    <button type="button" id="zoverview" aria-label="Show whole world" aria-pressed="false" title="Toggle whole world view">World</button>
   </div>
 </div>
-<ul class="legend" id="legend"></ul>
+<ul class="legend" id="legend" aria-label="Interactive map legend"></ul>
 <p id="tbMeta" class="hint" aria-live="polite" hidden></p>
-<p class="hint">Select a legend item to highlight its countries. In TB incidence, choose "Medicine access comparison" to colour countries above a selected incidence threshold by cessation medicine availability. Other countries are muted. Small island states are shown as dots. Drag to pan, pinch or scroll to zoom.</p>
+<p class="hint" id="mapAlternative">For a keyboard and screen-reader accessible alternative to the map, use the searchable country data table below. Select a legend item to highlight its countries. In TB incidence, choose "Medicine access comparison" to colour countries above a selected incidence threshold by cessation medicine availability. Other countries are muted. Small island states are shown as dots. On mobile, scroll with one finger and use two fingers to manipulate the map. Use World for the full map. On desktop, drag to pan or scroll to zoom.</p>
+</section>
 
-<section class="notes">
+<section id="countryData" class="country-data" aria-labelledby="countryDataTitle">
+  <h2 id="countryDataTitle">Country data table</h2>
+  <p id="countryTableHelp">Search and sort all study countries without using the geographic map. Available, unavailable and uncertain refer to practical retail access. “No data” means a missing TB estimate, not zero.</p>
+  <div class="country-table-tools">
+    <div class="toolbar-field"><label for="countryTableSearch">Search countries</label><input type="search" id="countryTableSearch" placeholder="Country name" autocomplete="off"></div>
+    <div class="toolbar-field country-sort-field">
+      <label for="countrySort">Sort table</label>
+      <select id="countrySort">
+        <option value="name:asc">Country A to Z</option><option value="name:desc">Country Z to A</option>
+        <option value="nrt:asc">NRT ascending</option><option value="nrt:desc">NRT descending</option>
+        <option value="varenicline:asc">Varenicline ascending</option><option value="varenicline:desc">Varenicline descending</option>
+        <option value="cytisine:asc">Cytisine ascending</option><option value="cytisine:desc">Cytisine descending</option>
+        <option value="bupropion:asc">Bupropion ascending</option><option value="bupropion:desc">Bupropion descending</option>
+        <option value="full:asc">Full package ascending</option><option value="full:desc">Full package descending</option>
+        <option value="incidence:asc">TB incidence ascending</option><option value="incidence:desc">TB incidence descending</option>
+        <option value="smoking:asc">Smoking-attributable TB cases ascending</option><option value="smoking:desc">Smoking-attributable TB cases descending</option>
+      </select>
+    </div>
+    <p id="countryTableCount" role="status" aria-live="polite" aria-atomic="true"></p>
+  </div>
+  <div class="country-table-scroll" tabindex="0" role="region" aria-label="Country data results, scroll within this region on narrow screens">
+    <table id="countryTable" aria-describedby="countryTableHelp">
+      <caption>Smoking cessation medicines and tuberculosis, by country</caption>
+      <thead><tr>
+        <th scope="col" data-key="name" aria-sort="ascending"><button type="button" data-sort="name">Country</button></th>
+        <th scope="col" data-key="nrt"><button type="button" data-sort="nrt">NRT</button></th>
+        <th scope="col" data-key="varenicline"><button type="button" data-sort="varenicline">Varenicline</button></th>
+        <th scope="col" data-key="cytisine"><button type="button" data-sort="cytisine">Cytisine</button></th>
+        <th scope="col" data-key="bupropion"><button type="button" data-sort="bupropion">Bupropion</button></th>
+        <th scope="col" data-key="full"><button type="button" data-sort="full">Full package</button></th>
+        <th scope="col" data-key="incidence"><button type="button" data-sort="incidence">TB incidence per 100,000</button></th>
+        <th scope="col" data-key="smoking"><button type="button" data-sort="smoking">Smoking-attributable TB cases</button></th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <nav class="country-table-pagination" aria-label="Country table pages">
+    <button type="button" id="tablePrevious">Previous page</button>
+    <span id="countryTablePage" aria-live="polite"></span>
+    <button type="button" id="tableNext">Next page</button>
+  </nav>
+</section>
+
+<section class="notes" aria-label="Methods and data interpretation">
   <p><b>Retail status</b> reflects practical consumer availability based on the latest information received: a medicine counts as available when at least one of two independent, consumer-facing retail sources shows a current way to buy, order or reserve it. Unavailable means both sources gave a confirmed negative result; uncertain means neither condition was met. Bupropion counts as available even where it is marketed only as an antidepressant.</p>
   <p><b>No data</b> (white) marks countries where the status of all four medicines is uncertain; in most of them the medicines are probably not available through open retail channels. Grey areas are territories outside the 195-country study.</p>
   <p><b>WHO columns</b> show what each country reported to WHO for 2024: whether the medicine is legally sold, its dispensing category (OTC or Rx) and whether its cost is reimbursed. WHO data describe legal status, not current stock, and may differ from retail findings.</p>
@@ -89,17 +170,74 @@
   <p><b>TB incidence + medicine access comparison:</b> For countries strictly above the chosen incidence threshold, red means zero medicines confirmed available, light green means exactly one available, green means two or three available but not the full package, and dark green means the full package is available (NRT + bupropion + varenicline or cytisine). Zero confirmed available does not necessarily mean confirmed unavailability: individual medicine statuses may be uncertain. Countries at or below the threshold are muted, and missing TB incidence data remain separate.</p>
   <p><b>WHO TB sources:</b> <a href="https://extranet.who.int/tme/generateCSV.asp?ds=estimates">TB burden estimates</a> and <a href="https://extranet.who.int/tme/generateCSV.asp?ds=estimates_age_sex">incidence disaggregated by risk factors</a>. <a href="https://www.who.int/teams/global-programme-on-tuberculosis-and-lung-health/data">WHO documentation and terms</a>. Estimates are synchronized automatically and may be retrospectively revised.</p>
 </section>
+</main>
+<footer aria-label="Project credits and licenses">
 <p class="credit">Created and maintained by PhD, MD Uladzimir Pikirenia (<a href="mailto:pikireniauladzimir@gmail.com">pikireniauladzimir@gmail.com</a>)</p>
 <p class="credit">Original data and text: <a href="https://creativecommons.org/licenses/by/4.0/" rel="license">CC BY 4.0</a>. Code: <a href="https://github.com/Pikirenia/tobacco_cessacion_map/blob/main/LICENSE">MIT</a>. <a href="https://github.com/Pikirenia/tobacco_cessacion_map/blob/main/THIRD_PARTY_NOTICES.md">Third-party terms</a>.</p>
+</footer>
 </div>
 
-<div class="tip" id="tip" role="dialog" aria-live="polite"><button class="x" type="button" aria-label="Close">×</button><div class="body"></div></div>
+<div class="tip" id="tip" role="dialog" aria-labelledby="countryTipTitle" aria-hidden="true" tabindex="-1"><button class="x" type="button" aria-label="Close">×</button><div class="body"></div></div>
 
-<script src="data/map-data.js" defer></script>
-<script src="data/tb-data.js?v=tb-20261023-2" defer></script>
+<script>
+/* GitHub Pages resource recovery. No external library is needed for diagnostics. */
+window.__mapBoot=(function(){
+  let ready=false;
+  const banner=()=>document.getElementById("resourceNotice");
+  function show(message){
+    const notice=banner();
+    if(!notice)return;
+    notice.hidden=false;
+    notice.querySelector(".resource-message").textContent=message;
+  }
+  function fallback(){
+    if(ready || typeof DATA==="undefined")return;
+    const body=document.querySelector("#countryTable tbody");
+    if(!body || body.children.length)return;
+    const tb=typeof TB_DATA!=="undefined"&&TB_DATA.countries?TB_DATA.countries:{};
+    const status={A:"Available",U:"Unavailable",X:"Uncertain"};
+    const frag=document.createDocumentFragment();
+    for(const d of Object.values(DATA).sort((a,b)=>a.n.localeCompare(b.n))){
+      const tr=document.createElement("tr");
+      const full=d.r[0]==="A"&&d.r[3]==="A"&&(d.r[1]==="A"||d.r[2]==="A");
+      const knownMissing=d.r[0]==="U"||d.r[3]==="U"||(d.r[1]==="U"&&d.r[2]==="U");
+      const row=tb[d.i]||{};
+      for(const value of [d.n,...d.r.split("").map(x=>status[x]),full?"Available":knownMissing?"Unavailable":"Uncertain",
+        row.incidence??"No data",row.smoking??"No data"]){
+        const cell=document.createElement(tr.children.length?"td":"th");
+        if(!tr.children.length)cell.scope="row";
+        cell.textContent=value;
+        tr.appendChild(cell);
+      }
+      frag.appendChild(tr);
+    }
+    body.replaceChildren(frag);
+    document.getElementById("countryTableCount").textContent="Showing basic country table while the map is unavailable.";
+    const pag=document.querySelector(".country-table-pagination");
+    if(pag)pag.hidden=true;
+    const controls=document.querySelector(".country-table-tools");
+    if(controls)controls.querySelectorAll("input,select").forEach(el=>el.disabled=true);
+  }
+  window.addEventListener("error",event=>{
+    const t=event.target;
+    if(t&&t.tagName==="SCRIPT")show("A required script could not load: "+(t.src.split("/").pop()||"unknown script")+". You can retry. If the map stays unavailable, use the country data table below.");
+    else if(event.error)show("An application error prevented part of the map from working. Retry loading the page. Country information remains available where possible.");
+  },true);
+  window.addEventListener("load",()=>{
+    if(!ready){
+      fallback();
+      show("The interactive map could not initialize. Use the basic country data table below or retry loading the page.");
+    }
+  });
+  return {show,markReady(){ready=true;},isReady(){return ready;}};
+})();
+</script>
+<script src="data/map-data.js?v=c7f4287c253c" defer></script>
+<script src="data/tb-data.js?v=cea40730fbc6" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js" defer></script>
-<script src="data/world-topology.js" defer></script>
-<script src="assets/map.js?v=tb-control-sync-20261023" defer></script>
+<script src="data/world-topology.js?v=66d88d29c081" defer></script>
+<script src="assets/share-state.js?v=2a24b9f86e38" defer></script>
+<script src="assets/map.js?v=9a20dbc1e6a7" defer></script>
 </body>
 </html>

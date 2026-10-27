@@ -2,7 +2,7 @@
   "name": "smoking-cessation-map",
   "private": true,
   "scripts": {
-    "test": "node tests/feedback.test.cjs && python3 -m unittest discover -s tests -p 'test_who_tb.py'",
+    "test": "node tests/feedback.test.cjs && node tests/share-state.test.cjs && python3 -m unittest discover -s tests -p 'test_who_tb*.py'",
     "test:browser": "playwright test",
     "check:data": "python3 scripts/check-data.py"
   },

@@ -30,6 +30,7 @@
     document.getElementById("country").add(new Option(d.n, d.n));
   });
   const grid = document.getElementById("medicines");
+  const syncAccess = new Map();
   for (const [key, name] of medicines) {
     const card = document.createElement("fieldset");
     card.className = "medicine";
@@ -40,8 +41,9 @@
       const group = document.createElement("fieldset");
       group.className = "question";
       group.id = key + "-" + question;
+      if (question === "access") {group.hidden = true; group.disabled = true;}
       const title = document.createElement("legend");
-      title.textContent = (question === "access" ? "Access" : "Availability") + " *";
+      title.textContent = (question === "access" ? "Prescription / access" : "Retail availability") + " *";
       group.append(title);
       for (const [value, label] of options) {
         const wrapper = document.createElement("label");
@@ -59,19 +61,29 @@
     note.className = "not-applicable"; note.hidden = true;
     note.textContent = "Access: not applicable because this medicine is not available.";
     card.append(na, note);
-    card.addEventListener("change", () => {
-      const unavailable = form.elements[key + "_availability"].value === "unavailable";
+    const updateAccess = () => {
+      const selected = form.elements[key + "_availability"].value;
+      const unavailable = selected === "unavailable";
+      const applicable = selected === "available" || selected === "unknown";
       const group = document.getElementById(key + "-access");
-      group.disabled = unavailable;
+      group.hidden = !applicable;
+      group.disabled = !applicable;
       group.querySelectorAll("input").forEach(input => {
-        input.required = !unavailable;
+        input.required = applicable;
         if (unavailable) input.checked = false;
       });
       na.disabled = !unavailable;
       note.hidden = !unavailable;
-    });
+    };
+    syncAccess.set(key, updateAccess);
+    card.addEventListener("change", updateAccess);
     grid.append(card);
   }
+  // Reconcile restored browser radio values without inventing access answers.
+  for (const sync of syncAccess.values()) sync();
+  window.addEventListener("pageshow", () => {
+    for (const sync of syncAccess.values()) sync();
+  });
   form.elements.started_at.value = String(Date.now());
   form.hidden = false;
   const configured = typeof GOOGLE_APPS_SCRIPT_URL === "string" && /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(GOOGLE_APPS_SCRIPT_URL);

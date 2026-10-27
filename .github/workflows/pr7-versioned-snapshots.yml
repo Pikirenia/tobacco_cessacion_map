@@ -1,0 +1,51 @@
+name: PR7 versioned WebKit visual references
+on:
+  push:
+    branches: ['optimization-feedback-and-sharing']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: pr7-versioned-webkit
+  cancel-in-progress: false
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Generate ONLY PR7 320px WebKit visual references, if absent
+        shell: bash
+        run: |
+          set -euo pipefail
+          snapshots=tests/mobile/mobile.spec.cjs-snapshots
+          if [ -f "$snapshots/320-light-portrait-sharing-pr7-mobile-webkit-linux.png" ] &&
+             [ -f "$snapshots/320-dark-portrait-sharing-pr7-mobile-webkit-linux.png" ]; then
+            echo "PR7 references already present; no write"
+            exit 0
+          fi
+          # The integration and production branches are never writable in this workflow.
+          test "${GITHUB_REF}" = "refs/heads/optimization-feedback-and-sharing"
+          npm ci
+          bash scripts/baseline/install-deps.sh
+          npx playwright install --with-deps webkit
+          npx playwright test -c playwright.mobile.config.cjs --project=mobile-webkit --grep '320 (light|dark) portrait visual layout' --update-snapshots
+          if git status --porcelain -- "$snapshots" | grep -v 'sharing-pr7-mobile-webkit-linux.png'; then
+            echo "ERROR: refuse to modify historical snapshot files" >&2
+            exit 1
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$snapshots/"*sharing-pr7-mobile-webkit-linux.png
+          if ! git diff --cached --quiet; then
+            git commit -m 'test(pr7): capture clean 320px WebKit references'
+            git push origin HEAD:optimization-feedback-and-sharing
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pr7-versioned-webkit-snapshots
+          path: tests/mobile/mobile.spec.cjs-snapshots/*sharing-pr7*.png
+          retention-days: 30

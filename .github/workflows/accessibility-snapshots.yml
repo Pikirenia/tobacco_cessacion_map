@@ -1,0 +1,57 @@
+name: PR4 versioned visual references
+on:
+  push:
+    branches: ['optimization-accessibility']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: pr4-snapshots
+  cancel-in-progress: true
+jobs:
+  snapshot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: bash scripts/baseline/install-deps.sh
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Capture only new PR4 desktop and mobile snapshots
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -f tests/baseline/visual.spec.cjs-snapshots/1280-light-medicines-accessibility-pr4-map-baseline-chromium-linux.png ] && [ -f tests/mobile/mobile.spec.cjs-snapshots/375-light-portrait-accessibility-pr4-mobile-chromium-linux.png ]; then
+            echo 'PR4 references exist; preserving reviewed files'
+            exit 0
+          fi
+          npx playwright test -c playwright.baseline.config.cjs tests/baseline/visual.spec.cjs --update-snapshots
+          npx playwright test -c playwright.mobile.config.cjs --grep 'visual layout and TB thresholds' --update-snapshots
+          if git status --porcelain -- tests/baseline/visual.spec.cjs-snapshots tests/mobile/mobile.spec.cjs-snapshots | grep -v 'accessibility-pr4'; then
+            echo 'Refusing to change historical snapshots' >&2
+            exit 1
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add tests/baseline/visual.spec.cjs-snapshots/*accessibility-pr4*.png tests/mobile/mobile.spec.cjs-snapshots/*accessibility-pr4*.png
+          if ! git diff --cached --quiet; then
+            git commit -m 'test(visual): record PR4 separate desktop/mobile references'
+            git push origin HEAD:optimization-accessibility
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pr4-visual-references
+          path: |
+            tests/baseline/visual.spec.cjs-snapshots/*accessibility-pr4*.png
+            tests/mobile/mobile.spec.cjs-snapshots/*accessibility-pr4*.png
+          retention-days: 30

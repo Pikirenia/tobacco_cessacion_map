@@ -40,7 +40,7 @@ The authoritative downloads are the WHO Global TB Programme's machine-generated 
 
 `scripts/update_who_tb.py` uses Python's standard library to fetch and validate both files and selects the **latest common reference year** with adequate country coverage. It uses WHO's smoking risk-factor best estimate (sex=all, adult age group, incidence, unit=number), never calculates an attributable number from smokers among TB cases. Missing values are not replaced by zero or values from earlier years. Countries are matched using ISO3 codes to the existing 195-country map.
 
-The `Sync WHO tuberculosis estimates` GitHub Actions workflow runs on the first merge to `main`, weekly on Mondays, or manually via **Actions → Sync WHO tuberculosis estimates → Run workflow**. It refreshes `data/tb-data.js` only when an actual indicator changes. Failed downloads or changed schemas fail validation *without overwriting* the previous data file. Country medicine records and feedback forms are unaffected.
+The `Sync WHO tuberculosis estimates` GitHub Actions workflow validates on pull requests and synchronizes weekly on Mondays, on relevant pushes to `main`, or via a non-dry-run manual dispatch **on `main` only**. Data and schema failures preserve the last verified snapshot. Important reference-year, missing-country, coverage or magnitude changes require human verification and an explicitly approved main-branch manual dispatch. Routine unchanged downloads make no commit. See [WHO validation rules and safe publication](docs/PR6_DATA_RELIABILITY.md). Country medicine records and feedback forms are unaffected.
 
 Initially, the TB layers show No data until the first successful automated sync. The latest source year and last successful update date are displayed beneath the map. WHO routinely revises past-year estimates, so do not compare series from different report vintages without caution.
 
@@ -52,6 +52,8 @@ Static `index.html`, `assets/map.js` (D3 v7, topojson-client), shared `assets/si
 and map dataset in `data/map-data.js`; WHO TB estimates are independently generated in `data/tb-data.js`. Unchanged Natural Earth/world-atlas 50m
 geometry is in `data/world-topology.js`, cached independently of page edits.
 Scripts use `defer` and execute in dependency order. No production build step or new runtime dependencies.
+
+Local CSS, JavaScript, country data and geography use automatic content-addressed `?v=` hashes in the HTML for reliable cache invalidation. Run `python3 scripts/version_assets.py --write` after updating a referenced resource, and commit the HTML and resource together. CI runs `python3 scripts/version_assets.py` to detect outdated references. The frontend displays a retry notice on missing dependencies and a basic country table when geographic initialization fails.
 
 ## Updating data and checking changes
 
@@ -69,7 +71,7 @@ from the reviewed workbook. It preserves map IDs and island coordinates and
 never edits Excel. Adding/removing countries requires explicit geography review.
 Commit the source workbook and regenerated files together after reviewing the diff.
 
-Run `npm ci`, `npm test`, and `npm run check:data` for local checks. WHO parser regression tests can also be run directly with `python3 -m unittest discover -s tests -p 'test_who_tb.py'`.
+Run `npm ci`, `npm test`, and `npm run check:data` for local checks. WHO parser regression tests can also be run directly with `python3 -m unittest discover -s tests -p 'test_who_tb*.py'`.
 For real browser checks, run `npx playwright install --with-deps chromium webkit`
 then `npm run test:browser`. Playwright is a development-only dependency.
 Tests serve the site under `/tobacco_cessacion_map/`, exercise desktop/mobile

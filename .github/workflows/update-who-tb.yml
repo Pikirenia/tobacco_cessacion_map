@@ -4,54 +4,95 @@ on:
     branches: [main]
     paths:
       - "scripts/update_who_tb.py"
+      - "scripts/version_assets.py"
       - ".github/workflows/update-who-tb.yml"
   pull_request:
     paths:
       - "scripts/update_who_tb.py"
+      - "scripts/version_assets.py"
       - ".github/workflows/update-who-tb.yml"
+      - "tests/test_who_tb.py"
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Validate without publishing WHO estimates"
+        type: boolean
+        default: true
+      approve_review:
+        description: "I reviewed the official WHO revision and approve flagged changes (main only)"
+        type: boolean
+        default: false
   schedule:
     - cron: "27 6 * * 1"
 permissions:
-  contents: write
+  contents: read
 concurrency:
-  group: who-tb-sync
+  group: who-tb-sync-${{ github.ref }}
   cancel-in-progress: false
 jobs:
-  validate-source:
-    if: github.event_name == 'pull_request'
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Verify WHO source compatibility
-        run: |
-          python -m unittest discover -s tests -p "test_who_tb.py"
-          python scripts/update_who_tb.py
-  sync:
-    if: github.event_name != 'pull_request'
+      - name: Offline WHO validation and failure/recovery tests
+        run: python3 -m unittest discover -s tests -p 'test_who_tb*.py'
+      - name: Cache hash integrity
+        run: python3 scripts/version_assets.py
+  live-dry-run:
+    needs: validate
+    if: github.event_name == 'workflow_dispatch' && (github.ref != 'refs/heads/main' || inputs.dry_run)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate current WHO CSVs without changing files
+        run: python3 scripts/update_who_tb.py --dry-run
+  sync:
+    needs: validate
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'schedule' ||
+       github.event_name == 'push' ||
+       (github.event_name == 'workflow_dispatch' && !inputs.dry_run))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
           persist-credentials: true
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Validate WHO data parser
-        run: python -m unittest discover -s tests -p "test_who_tb.py"
-      - name: Synchronize authoritative WHO CSVs
-        run: python scripts/update_who_tb.py
-      - name: Commit verified changes
+      - name: Synchronize official WHO data (fail closed on revisions)
+        env:
+          REVIEW_APPROVED: ${{ github.event_name == 'workflow_dispatch' && inputs.approve_review }}
         run: |
-          if ! git diff --quiet -- data/tb-data.js; then
+          if [ "$REVIEW_APPROVED" = "true" ]; then
+            python3 scripts/update_who_tb.py --approve-review
+          else
+            python3 scripts/update_who_tb.py
+          fi
+      - name: Recompute static asset versions
+        run: python3 scripts/version_assets.py --write
+      - name: Verify all asset references
+        run: python3 scripts/version_assets.py
+      - name: Commit validated snapshot and matching HTML atomically
+        run: |
+          if ! git diff --quiet -- data/tb-data.js index.html feedback/index.html; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add data/tb-data.js
-            git commit -m "Update WHO tuberculosis indicators"
-            git push
+            git add data/tb-data.js index.html feedback/index.html
+            git commit -m "Update validated WHO tuberculosis snapshot and asset versions"
+            git push origin HEAD:main
           else
-            echo "No WHO indicator changes."
+            echo "WHO snapshot and cache references unchanged; no commit."
           fi

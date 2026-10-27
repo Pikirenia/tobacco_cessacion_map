@@ -66,7 +66,7 @@ test('feedback is usable at narrow widths and in dark mode', async ({page}) => {
 
 test('native POST locks answers, retries safely and redirects only after acknowledgement', async ({page}) => {
   const endpoint='https://script.google.com/macros/s/test/exec';
-  await page.route('**/feedback/config.js',route=>route.fulfill({contentType:'application/javascript',body:`const GOOGLE_APPS_SCRIPT_URL=${JSON.stringify(endpoint)};`}));
+  await page.route('**/feedback/config.js*',route=>route.fulfill({contentType:'application/javascript',body:`const GOOGLE_APPS_SCRIPT_URL=${JSON.stringify(endpoint)};`}));
   const posts=[];let respond;
   // Intercept every Google endpoint. Tests must never write to the real Sheet.
   await page.route('https://script.google.com/**',async route=>{

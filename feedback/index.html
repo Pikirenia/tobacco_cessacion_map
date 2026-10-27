@@ -7,11 +7,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/site.css">
-<link rel="stylesheet" href="feedback.css">
-<script src="../data/map-data.js" defer></script>
-<script src="config.js" defer></script>
-<script src="feedback.js" defer></script>
+<link rel="stylesheet" href="../assets/site.css?v=4cfe44864015">
+<link rel="stylesheet" href="feedback.css?v=4808e82b8912">
+<script src="../data/map-data.js?v=c7f4287c253c" defer></script>
+<script src="config.js?v=94c12fb52581" defer></script>
+<script src="feedback.js?v=7274a1ebfebd" defer></script>
 </head>
 <body>
 <main class="wrap feedback-wrap">
@@ -25,8 +25,10 @@
 <p id="status" class="status" role="status" aria-live="polite">Loading form...</p>
 <form id="feedback-form" method="post" target="submission-frame" hidden>
 <p class="helper">Fields marked * are required. No name or email is needed. Please do not include personal or medical information. Responses are sent to the project owner's private Google Sheet.</p>
-<div class="field"><label for="country">Country *</label><select id="country" name="country" required><option value="">Select a country</option></select></div>
-<div id="medicines" class="medicine-grid"></div>
+<section class="feedback-step" aria-labelledby="country-step"><h2 id="country-step">1. Country</h2><div class="field"><label for="country">Country *</label><select id="country" name="country" required><option value="">Select a country</option></select></div>
+</section>
+<section class="feedback-step" aria-labelledby="medicines-step"><h2 id="medicines-step">2. Medicine availability and access</h2><p class="helper">Choose an availability answer for each medicine. Prescription and access questions appear when relevant. If you are unsure, select Don't know.</p><div id="medicines" class="medicine-grid"></div></section>
+<section class="feedback-step" aria-labelledby="details-step"><h2 id="details-step">3. Optional details and sources</h2>
 <div class="field">
 <label for="comments">Additional information / comments (optional)</label>
 <p id="comments-help" class="helper">You can mention brand names, temporary shortages, regional differences, online availability, unusual access conditions, or any other relevant information.</p>
@@ -37,11 +39,12 @@
 <p id="source-help" class="helper">For example, a pharmacy website, medicines registry, regulator, or another source that may help us verify the information.</p>
 <input id="source" name="source" type="text" maxlength="1000" aria-describedby="source-help">
 </div>
+</section>
 <div class="honeypot" aria-hidden="true"><label for="website">Leave this field empty</label><input type="text" id="website" name="website" tabindex="-1" autocomplete="off"></div>
 <input type="hidden" name="started_at">
 <input type="hidden" name="submission_id">
 <input type="hidden" name="response_token">
-<div class="actions"><button id="submit-button" type="submit" class="button-link primary">Submit feedback</button><a class="back-link" href="../">Return to map</a></div>
+<div class="actions" aria-label="Submit your answers"><button id="submit-button" type="submit" class="button-link primary">Submit feedback</button><a class="back-link" href="../">Return to map</a></div>
 </form>
 <section id="thank-you" class="thank-you" tabindex="-1" hidden aria-labelledby="thanks-title">
 <h2 id="thanks-title">Thank you for your feedback</h2>
