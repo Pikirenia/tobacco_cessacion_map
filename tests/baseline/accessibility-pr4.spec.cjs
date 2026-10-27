@@ -21,7 +21,7 @@ async function visit(page,width,scheme,scenario='medicines'){
 }
 
 for(const width of [375,1280])for(const scheme of ['light','dark'])
-  for(const scenario of ['medicines','tb-incidence','tb-smoking','compare-100','details','feedback']){
+  for(const scenario of ['medicines','tb-incidence','tb-smoking','compare-100','compare-200','compare-400','details','feedback']){
     test(`PR4 axe ${width} ${scheme} ${scenario} serious/critical regression`,async({page},info)=>{
       await visit(page,width,scheme,scenario);
       await page.addScriptTag({path:axe});
