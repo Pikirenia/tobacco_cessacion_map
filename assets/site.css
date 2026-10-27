@@ -67,10 +67,10 @@ svg#map:active{cursor:grabbing}
 .dot{stroke:var(--border)}
 .zoom{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:6px}
 .zoom button{width:36px;height:36px;border-radius:8px;border:1px solid var(--panel-line);background:var(--panel);color:var(--ink);font:600 18px/1 "Public Sans",system-ui,sans-serif;cursor:pointer}
-.legend{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 0;padding:0;list-style:none}
-.legend button{display:flex;align-items:center;gap:8px;font:inherit;font-size:.9rem;color:var(--ink);background:var(--panel);border:1px solid var(--panel-line);border-radius:8px;padding:6px 10px;cursor:pointer}
+.legend{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0 0;padding:0;list-style:none}
+.legend button{display:flex;align-items:center;gap:6px;font:inherit;font-size:.84rem;color:var(--ink);background:var(--panel);border:1px solid var(--panel-line);border-radius:8px;padding:5px 9px;cursor:pointer}
 .legend button[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
-.legend .sw{width:22px;height:14px;border-radius:3px;border:1px solid rgba(0,0,0,.18)}
+.legend .sw{flex:0 0 auto;width:18px;height:12px;border-radius:3px;border:1px solid rgba(0,0,0,.18)}
 .legend .n{color:var(--muted);font-variant-numeric:tabular-nums}
 .hint{font-size:.85rem;color:var(--muted);margin:10px 0 0}
 .notes{margin-top:28px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);font-size:.88rem;max-width:80ch}
