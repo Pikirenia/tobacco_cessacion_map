@@ -13,7 +13,7 @@ for(const width of widths) for(const scheme of ['light','dark']) {
       await expect(page.locator('#mapbox')).toHaveScreenshot(
         width + '-' + scheme + '-' + mode + '-map.png');
       if(mode === 'medicines' || ((width === 375 || width === 1280) && mode.startsWith('compare'))) {
-        await expect(page).toHaveScreenshot(width + '-' + scheme + '-' + mode + '-page.png',
+        await expect(page).toHaveScreenshot(width + '-' + scheme + '-' + mode + '-desktop-v2-page.png',
           {fullPage: true});
       }
     });
