@@ -8,7 +8,7 @@ Measurement date: **27 October 2026**. Application under test: [production GitHu
 - Initial visual capture: **84 passed**, with **110 snapshot PNG files** committed to the feature branch (84 map captures + 26 full-page captures).
 - Baseline functional, visual and axe inventory suite: **120 passed** (84 visual, 32 automated axe audits, 4 functional/browser navigation tests).
 - Screenshots cover widths **320, 375, 390, 768, 1024, 1280, 1440 px**, light/dark, three main layers, TB medicine comparisons at strictly greater than 100, 200 and 400.
-- A second workflow run (40479911969) contains the corrected desktop Lighthouse preset and severity aggregation. **Its results must be checked separately before treating them as verified.** No tests in the original successful run were changed in the production application.
+- The corrected second quality-baseline [workflow run 40479911969](https://github.com/Pikirenia/tobacco_cessacion_map/actions/runs/40479911969) **completed successfully**, including **120 passed** baseline tests, severity aggregation and mobile + desktop Lighthouse lab measurement. No production application files or original tests were changed.
 
 ## Lighthouse mobile (measured laboratory results)
 
@@ -22,9 +22,25 @@ Lighthouse **12.4.0**, Chromium **153.0.8010.12**, GitHub Actions Ubuntu 24.04, 
 | Cumulative Layout Shift | **0.20** | 0.20 |
 | Total Blocking Time | **367.3 ms** | 423.5 ms |
 
-Desktop Lighthouse failed in the original run due to inconsistent `--form-factor=desktop` and mobile screen emulation. **No original desktop Lighthouse numbers exist.** The flag was corrected to `--preset=desktop` in commit `4b24481`; verify the rerun, do not infer values from the mobile reports.
+The first desktop attempt failed because `--form-factor=desktop` was incompatible with default mobile screen emulation. The flag was corrected to `--preset=desktop` in commit `4b24481`, then both desktop audits **executed successfully** on run 40479911969. See the measured values and run-to-run variability below.
 
 **INP is not measured.** It requires field event-distribution observation or a valid interaction-specific estimator and is not equivalent to Playwright double-rAF measurements. No CrUX p75 data were retrieved.
+
+## Corrected second Lighthouse run (measured)
+
+Lighthouse 12.4.0, same Chromium and runner OS family, **one run per combination**. An audit score is not a clinical-style confidence interval or a field percentile.
+
+| Metric | Production desktop | Local desktop | Production mobile | Local mobile |
+|---|---:|---:|---:|---:|
+| Performance | **97/100** | 95/100 | 79/100 | 62/100 |
+| Accessibility | **92/100** | 92/100 | 92/100 | 92/100 |
+| LCP | **831.9 ms** | 1,151.3 ms | 3,312.6 ms | 5,612.1 ms |
+| CLS | **0.10** | 0.10 | 0.20 | 0.20 |
+| TBT | **42.5 ms** | 3.2 ms | 307.0 ms | 426.5 ms |
+
+**Variability warning:** On the same date, the first production mobile audit reported performance **83**, LCP **2.11 s**; the second reported **79**, LCP **3.31 s**. Local mobile varied even more (**82 → 62**, LCP **2.13 → 5.61 s**). Such single-run variability is too large to set tight regression budgets or attribute changes to application source. Future benchmarking should use repeated runs, comparable emulation/network/CPU conditions and median or percentile distributions, along with traces. Desktop scores were measured only on the corrected second run.
+
+The second Playwright first-load sample likewise varied from the first (production 375px `mapReadyWallMs` **423 ms** vs **834 ms**), while interaction proxies stayed approximately 32 ms. This underscores the separation of workload, browser frames and uncontrolled runner conditions.
 
 ## Independent Playwright first-load laboratory run
 
