@@ -371,7 +371,8 @@ const tableRows=Object.values(DATA).map(d=>{
     full:RET[fullPackageStatus(d)],incidence:Number.isFinite(tb.incidence)?tb.incidence:null,
     smoking:Number.isFinite(tb.smoking)?tb.smoking:null};
 });
-let tableSort="name",tableAscending=true;
+let tableSort="name",tableAscending=true,tablePage=0;
+const tablePageSize=25;
 function renderCountryTable(){
   const query=tableSearch.value.trim().toLocaleLowerCase();
   const items=tableRows.filter(row=>row.name.toLocaleLowerCase().includes(query));
@@ -383,8 +384,12 @@ function renderCountryTable(){
     const c=typeof av==="number"?av-bv:String(av).localeCompare(String(bv),"en",{sensitivity:"base"});
     return (tableAscending?1:-1)*c || a.name.localeCompare(b.name,"en");
   });
+  const pages=Math.max(1,Math.ceil(items.length/tablePageSize));
+  tablePage=Math.min(tablePage,pages-1);
+  const first=tablePage*tablePageSize;
+  const visible=items.slice(first,first+tablePageSize);
   const frag=document.createDocumentFragment();
-  for(const row of items){
+  for(const row of visible){
     const tr=document.createElement("tr");
     for(const key of Object.keys(tableLabels)){
       const cell=document.createElement(key==="name"?"th":"td");
@@ -397,7 +402,12 @@ function renderCountryTable(){
     frag.appendChild(tr);
   }
   tableBody.replaceChildren(frag);
-  tableCount.textContent=items.length+" of "+tableRows.length+" countries shown";
+  tableCount.textContent=items.length
+    ? "Showing "+(first+1)+"–"+(first+visible.length)+" of "+items.length+" matching countries ("+tableRows.length+" in study)"
+    : "No countries match. "+tableRows.length+" countries in study.";
+  document.getElementById("countryTablePage").textContent="Page "+(tablePage+1)+" of "+pages;
+  document.getElementById("tablePrevious").disabled=tablePage===0;
+  document.getElementById("tableNext").disabled=tablePage>=pages-1;
   document.getElementById("countrySort").value=tableSort+":"+(tableAscending?"asc":"desc");
   for(const th of tableHeaders){
     if(th.dataset.key===tableSort)th.setAttribute("aria-sort",tableAscending?"ascending":"descending");
@@ -407,18 +417,18 @@ function renderCountryTable(){
     b.setAttribute("aria-label","Sort by "+tableLabels[th.dataset.key]+direction);
   }
 }
-tableSearch.addEventListener("input",renderCountryTable);
+tableSearch.addEventListener("input",()=>{tablePage=0;renderCountryTable();});
 document.querySelectorAll("#countryTable [data-sort]").forEach(button=>{
   button.addEventListener("click",()=>{
     const key=button.dataset.sort;
     if(key===tableSort)tableAscending=!tableAscending;
     else {tableSort=key;tableAscending=true;}
-    renderCountryTable();
+    tablePage=0;renderCountryTable();
   });
 });
 document.getElementById("countrySort").addEventListener("change",function(){
   const [key,direction]=this.value.split(":");
-  tableSort=key;tableAscending=direction==="asc";
+  tableSort=key;tableAscending=direction==="asc";tablePage=0;
   renderCountryTable();
 });
 function responsiveSortAccessibility(){
@@ -427,6 +437,8 @@ function responsiveSortAccessibility(){
 }
 matchMedia("(max-width:720px)").addEventListener("change",responsiveSortAccessibility);
 responsiveSortAccessibility();
+document.getElementById("tablePrevious").addEventListener("click",()=>{tablePage=Math.max(0,tablePage-1);renderCountryTable();});
+document.getElementById("tableNext").addEventListener("click",()=>{tablePage++;renderCountryTable();});
 renderCountryTable();
 
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change",paint);
