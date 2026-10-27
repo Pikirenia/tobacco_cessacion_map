@@ -14,7 +14,7 @@ The parser selects the latest common year **with at least 120 countries having b
 
 | Rule | Behavior | Rationale |
 | --- | --- | --- |
-| WHO response is empty, invalid UTF-8, above 12 MB or malformed CSV | Fatal validation error, no update | Reject truncated, error-page or unexpectedly large responses |
+| WHO response is empty, invalid UTF-8, above 12 MB, mismatched Content-Length or malformed CSV | Fatal validation error, no update | Reject truncated, error-page or unexpectedly large responses |
 | Missing required incidence/risk-factor fields, duplicate/empty headers | Fatal | Prevent silent WHO schema changes or wrong metric selection |
 | ISO3 not three Latin letters for data-bearing country rows, invalid year, duplicate selected ISO3/year records | Fatal | Avoid misattribution and indeterminate country estimates |
 | Numeric text not recognized, negative, NaN or infinite | Fatal for selected country/metric, no update | Never coerce invalid values to missing or zero |
