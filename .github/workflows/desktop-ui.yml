@@ -1,0 +1,63 @@
+name: Desktop UI PR 2 regression and screenshots
+on:
+  push:
+    branches: ['optimization-desktop-ui']
+  pull_request:
+    branches: ['optimization']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  desktop-ui:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: bash scripts/baseline/install-deps.sh
+      - run: npx playwright install --with-deps chromium
+      - name: Capture intentional post-PR2 page snapshots on isolated branch
+        if: github.event_name == 'push' && github.ref == 'refs/heads/optimization-desktop-ui'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f tests/baseline/visual.spec.cjs-snapshots/1280-light-medicines-desktop-v2-map-baseline-chromium-linux.png ]; then
+            npx playwright test -c playwright.baseline.config.cjs tests/baseline/visual.spec.cjs --update-snapshots
+            # Original PR1 map/reference screenshots are immutable.
+            if git status --porcelain -- tests/baseline/visual.spec.cjs-snapshots/ | grep -v -E 'desktop-v2-(page|map)-'; then
+              echo 'ERROR: the original PR1 baseline snapshots changed' >&2
+              exit 1
+            fi
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add 'tests/baseline/visual.spec.cjs-snapshots/*desktop-v2-*.png'
+            if ! git diff --cached --quiet; then
+              git commit -m 'test(ui): capture post-change page snapshots separately from PR1 baseline'
+              git push origin HEAD:optimization-desktop-ui
+            fi
+          fi
+      - name: Browser functional, post-change visual and axe regression
+        run: npx playwright test -c playwright.baseline.config.cjs
+      - name: Aggregate accessibility findings
+        if: always()
+        run: node scripts/baseline/aggregate-a11y.cjs
+      - name: Upload screenshots and regression reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-ui-pr2-results
+          path: |
+            baseline-artifacts/
+            tests/baseline/visual.spec.cjs-snapshots/*desktop-v2-*.png
+          retention-days: 30

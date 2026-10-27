@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/site.css?v=tb-access-count-colors-1">
+<link rel="stylesheet" href="assets/site.css?v=desktop-ui-pr2">
 </head>
 <body>
 <div class="wrap">
@@ -17,56 +17,81 @@
 </header>
 <nav class="feedback-nav" aria-label="Contribute"><a class="button-link" href="feedback/">Submit country feedback</a></nav>
 
-<div class="map-mode seg" role="group" aria-label="Map data layer">
-  <button type="button" data-mode="medicines" aria-pressed="true">Medicines</button>
-  <button type="button" data-mode="tb-incidence" aria-pressed="false">TB incidence</button>
-  <button type="button" data-mode="tb-smoking" aria-pressed="false">Smoking-attributable TB</button>
-</div>
-<div class="controls">
-  <div class="seg" id="medicineViews" role="group" aria-label="Medicine availability">
-    <button type="button" data-view="full" aria-pressed="false">Full package</button>
-    <button type="button" data-view="all" aria-pressed="true">All four</button>
-    <button type="button" data-view="0" aria-pressed="false">NRT</button>
-    <button type="button" data-view="1" aria-pressed="false">Varenicline</button>
-    <button type="button" data-view="2" aria-pressed="false">Cytisine</button>
-    <button type="button" data-view="3" aria-pressed="false">Bupropion</button>
+<main id="main-content">
+<section class="map-toolbar" aria-label="Map controls">
+  <div class="toolbar-layer">
+    <span class="toolbar-label" id="mapLayerLabel">Map layer</span>
+    <div class="map-mode seg" role="group" aria-labelledby="mapLayerLabel">
+      <button type="button" data-mode="medicines" aria-pressed="true">Medicines</button>
+      <button type="button" data-mode="tb-incidence" aria-pressed="false">TB incidence</button>
+      <button type="button" data-mode="tb-smoking" aria-pressed="false">Smoking-attributable TB</button>
+    </div>
   </div>
-  <div id="tbIncidenceControls" class="tb-controls" hidden>
-    <label for="tbColorBy">TB incidence display</label>
-    <select id="tbColorBy">
-      <option value="rate">Incidence rate</option>
-      <option value="access">Medicine access comparison</option>
-    </select>
-    <label for="tbCutoff" id="tbCutoffLabel" hidden>Incidence above</label>
-    <select id="tbCutoff" hidden>
-      <option value="100">&gt;100 / 100,000</option>
-      <option value="200">&gt;200 / 100,000</option>
-      <option value="400">&gt;400 / 100,000</option>
-    </select>
+  <div class="controls">
+    <div class="control-settings">
+      <div class="toolbar-field medicine-field" id="medicineViewField">
+        <span class="toolbar-label" id="medicineViewLabel">Medicine availability</span>
+        <div class="seg" id="medicineViews" role="group" aria-labelledby="medicineViewLabel">
+          <button type="button" data-view="full" aria-pressed="false">Full package</button>
+          <button type="button" data-view="all" aria-pressed="true">All four</button>
+          <button type="button" data-view="0" aria-pressed="false">NRT</button>
+          <button type="button" data-view="1" aria-pressed="false">Varenicline</button>
+          <button type="button" data-view="2" aria-pressed="false">Cytisine</button>
+          <button type="button" data-view="3" aria-pressed="false">Bupropion</button>
+        </div>
+      </div>
+      <div id="tbIncidenceControls" class="tb-incidence-controls" hidden>
+        <div class="toolbar-field">
+          <label for="tbColorBy">Visualization</label>
+          <select id="tbColorBy">
+            <option value="rate">Incidence rate</option>
+            <option value="access">Medicine access comparison</option>
+          </select>
+        </div>
+        <div class="toolbar-field" id="tbThresholdField" hidden>
+          <span class="toolbar-label" id="tbCutoffLabel">Incidence above, per 100,000</span>
+          <div class="seg threshold-seg" id="tbThresholds" role="group" aria-labelledby="tbCutoffLabel">
+            <button type="button" data-cutoff="100" aria-pressed="true">&gt; 100</button>
+            <button type="button" data-cutoff="200" aria-pressed="false">&gt; 200</button>
+            <button type="button" data-cutoff="400" aria-pressed="false">&gt; 400</button>
+          </div>
+          <!-- Native state mirror retains browser form restoration and historical test compatibility. -->
+          <select id="tbCutoff" aria-label="Restored incidence threshold" tabindex="-1" hidden>
+            <option value="100">&gt;100 / 100,000</option>
+            <option value="200">&gt;200 / 100,000</option>
+            <option value="400">&gt;400 / 100,000</option>
+          </select>
+        </div>
+      </div>
+      <div id="tbControls" class="tb-controls" hidden>
+        <div class="toolbar-field">
+          <label for="tbMedicine">Highlight by medicine or package</label>
+          <select id="tbMedicine">
+            <option value="full">Full package</option>
+            <option value="any" selected>All countries</option>
+            <option value="0">NRT</option>
+            <option value="1">Varenicline</option>
+            <option value="2">Cytisine</option>
+            <option value="3">Bupropion</option>
+          </select>
+        </div>
+        <div class="toolbar-field">
+          <label for="tbStatus">Retail status</label>
+          <select id="tbStatus">
+            <option value="A">Available</option>
+            <option value="U">Unavailable</option>
+            <option value="X">Uncertain</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="find toolbar-field">
+      <label for="q">Find a country</label>
+      <input id="q" list="countries" autocomplete="off" placeholder="e.g. Poland">
+      <datalist id="countries"></datalist>
+    </div>
   </div>
-  <div id="tbControls" class="tb-controls" hidden>
-    <label for="tbMedicine">Highlight by medicine or package</label>
-    <select id="tbMedicine">
-      <option value="full">Full package</option>
-      <option value="any" selected>All countries</option>
-      <option value="0">NRT</option>
-      <option value="1">Varenicline</option>
-      <option value="2">Cytisine</option>
-      <option value="3">Bupropion</option>
-    </select>
-    <label for="tbStatus">Retail status</label>
-    <select id="tbStatus">
-      <option value="A">Available</option>
-      <option value="U">Unavailable</option>
-      <option value="X">Uncertain</option>
-    </select>
-  </div>
-  <div class="find">
-    <label for="q">Find a country</label>
-    <input id="q" list="countries" autocomplete="off" placeholder="e.g. Poland">
-    <datalist id="countries"></datalist>
-  </div>
-</div>
+</section>
 
 <div class="mapbox" id="mapbox">
   <svg id="map" role="img" aria-label="World map of smoking cessation medicine availability"></svg>
@@ -89,17 +114,18 @@
   <p><b>TB incidence + medicine access comparison:</b> For countries strictly above the chosen incidence threshold, red means zero medicines confirmed available, light green means exactly one available, green means two or three available but not the full package, and dark green means the full package is available (NRT + bupropion + varenicline or cytisine). Zero confirmed available does not necessarily mean confirmed unavailability: individual medicine statuses may be uncertain. Countries at or below the threshold are muted, and missing TB incidence data remain separate.</p>
   <p><b>WHO TB sources:</b> <a href="https://extranet.who.int/tme/generateCSV.asp?ds=estimates">TB burden estimates</a> and <a href="https://extranet.who.int/tme/generateCSV.asp?ds=estimates_age_sex">incidence disaggregated by risk factors</a>. <a href="https://www.who.int/teams/global-programme-on-tuberculosis-and-lung-health/data">WHO documentation and terms</a>. Estimates are synchronized automatically and may be retrospectively revised.</p>
 </section>
+</main>
 <p class="credit">Created and maintained by PhD, MD Uladzimir Pikirenia (<a href="mailto:pikireniauladzimir@gmail.com">pikireniauladzimir@gmail.com</a>)</p>
 <p class="credit">Original data and text: <a href="https://creativecommons.org/licenses/by/4.0/" rel="license">CC BY 4.0</a>. Code: <a href="https://github.com/Pikirenia/tobacco_cessacion_map/blob/main/LICENSE">MIT</a>. <a href="https://github.com/Pikirenia/tobacco_cessacion_map/blob/main/THIRD_PARTY_NOTICES.md">Third-party terms</a>.</p>
 </div>
 
-<div class="tip" id="tip" role="dialog" aria-live="polite"><button class="x" type="button" aria-label="Close">×</button><div class="body"></div></div>
+<div class="tip" id="tip" role="dialog" aria-label="Country details" aria-live="polite"><button class="x" type="button" aria-label="Close">×</button><div class="body"></div></div>
 
 <script src="data/map-data.js" defer></script>
 <script src="data/tb-data.js?v=tb-20261023-2" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js" defer></script>
 <script src="data/world-topology.js" defer></script>
-<script src="assets/map.js?v=tb-control-sync-20261023" defer></script>
+<script src="assets/map.js?v=desktop-ui-pr2" defer></script>
 </body>
 </html>
