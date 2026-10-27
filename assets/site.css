@@ -128,7 +128,7 @@ a:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid va
 /* PR3: reserve the map region before deferred scripts paint its geography. */
 .mapbox{aspect-ratio:1000 / 520}
 svg#map{height:100%}
-.tip[aria-hidden="true"]{visibility:hidden}
+.tip:not(.on)[aria-hidden="true"]{visibility:hidden}
 .tip .medicine-cards{display:none}
 .tip .x:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .country:focus-visible,.dot:focus-visible{stroke:var(--focus)!important;stroke-width:3px!important}
