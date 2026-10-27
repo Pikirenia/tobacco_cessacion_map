@@ -104,8 +104,9 @@ test('table sort and search work by keyboard without hundreds of SVG tab stops',
   const shown=await page.locator('#countryTable tbody tr').count();
   expect(shown).toBeGreaterThan(0);
   expect(shown).toBeLessThan(195);
-  await page.locator('#countryTable [data-sort="name"]').focus();
-  await page.keyboard.press('Enter');
+  await page.locator('#countrySort').focus();
+  await page.keyboard.press('End');
+  await page.locator('#countrySort').selectOption('name:desc');
   await expect(page.locator('#countryTable [data-key="name"]')).toHaveAttribute('aria-sort','descending');
   const scroll=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
   expect(scroll).toBeLessThanOrEqual(1);
