@@ -107,7 +107,8 @@ test('small islands retain search and transparent touch target',async({page})=>{
  await page.locator('circle.tap-target').first().dispatchEvent('click',{clientX:130,clientY:200});
  await expect(page.locator('#tip.on h2')).toBeVisible();
 });
-test('single-finger touch does not pan; two-finger gesture zooms',async({page})=>{
+test('single-finger touch does not pan; two-finger gesture zooms',async({page},testInfo)=>{
+ test.skip(testInfo.project.name==='mobile-webkit', 'Linux WebKit rejects constructed Touch objects; verify real Safari pinch on device');
  await prepare(page,375,780,'light');
  const r=await page.evaluate(()=>{
    const svg=document.querySelector('#map'),g=svg.querySelector('g');
