@@ -8,11 +8,12 @@ for site in local production; do
   if [ "$site" = local ]; then url="$URL_LOCAL"; else url="$URL_PROD"; fi
   for device in mobile desktop; do
     echo "Lighthouse lab: $site / $device"
+    if [ "$device" = desktop ]; then formarg="--preset=desktop"; else formarg="--form-factor=mobile"; fi
     npx --yes --package=lighthouse@12.4.0 lighthouse "$url" \
       --quiet --chrome-flags='--headless --no-sandbox --disable-dev-shm-usage' \
       --only-categories=performance,accessibility --output=json \
       --output-path="baseline-artifacts/lighthouse-$site-$device.json" \
-      --form-factor="$device" || echo "Lighthouse unavailable: $site $device"
+      "$formarg" || echo "Lighthouse unavailable: $site $device"
   done
 done
 node scripts/baseline/summarize.cjs

@@ -39,6 +39,9 @@ jobs:
           fi
       - name: Run baseline functional, visual and accessibility checks
         run: npx playwright test -c playwright.baseline.config.cjs
+      - name: Aggregate axe findings by severity
+        if: always()
+        run: node scripts/baseline/aggregate-a11y.cjs
       - name: Run laboratory measurements
         if: always()
         run: |

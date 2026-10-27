@@ -95,6 +95,7 @@ function quantiles(values) {
     await browser.close();
     fs.mkdirSync(path.dirname(file),{recursive:true});
     fs.writeFileSync(file,JSON.stringify(output,null,2));
+    console.log('PERFORMANCE_INTERACTIONS '+kind+' '+JSON.stringify(output.samples.map(s=>({width:s.width,interactions:s.interactions,error:s.error}))));
     console.log('PERFORMANCE_REPORT '+file+' '+JSON.stringify(output.samples.map(s=>({
       width:s.width,ttfbMs:s.ttfbMs,fcpMs:s.fcpMs,lcpMs:s.lcpMs,cls:s.cls,mapReadyWallMs:s.mapReadyWallMs,error:s.error
     }))));
