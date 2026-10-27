@@ -85,7 +85,7 @@ def numerical(raw):
     if "," in value:
         # Accept canonical grouped thousands only. Treat a decimal comma or
         # malformed grouping as an error, not silently as a different estimate.
-        if not re.fullmatch(r"[0-9]{1,3}(?:,[0-9]{3})+(?:\\.[0-9]+)?", value):
+        if not re.fullmatch(r"[0-9]{1,3}(?:,[0-9]{3})+(?:\.[0-9]+)?", value):
             raise ValidationError("Ambiguous WHO numeric grouping: " + repr(raw))
         value = value.replace(",", "")
     try:
