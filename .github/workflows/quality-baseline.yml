@@ -1,0 +1,64 @@
+name: Quality baseline (Chromium)
+on:
+  push:
+    branches: ['test/reproducible-quality-baseline']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  baseline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: bash scripts/baseline/install-deps.sh
+      - run: npx playwright install --with-deps chromium
+      - name: Capture first baseline on dedicated branch ONLY
+        if: github.event_name == 'push' && github.ref == 'refs/heads/test/reproducible-quality-baseline'
+        run: |
+          if [ ! -d tests/baseline/visual.spec.cjs-snapshots ]; then
+            npx playwright test -c playwright.baseline.config.cjs tests/baseline/visual.spec.cjs --update-snapshots
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add tests/baseline/visual.spec.cjs-snapshots
+            git commit -m 'test: capture candidate Chromium visual baseline'
+            git push origin HEAD:test/reproducible-quality-baseline
+          fi
+      - name: Run baseline functional, visual and accessibility checks
+        run: npx playwright test -c playwright.baseline.config.cjs
+      - name: Aggregate axe findings by severity
+        if: always()
+        run: node scripts/baseline/aggregate-a11y.cjs
+      - name: Run laboratory measurements
+        if: always()
+        run: |
+          python3 tests/serve.py > /tmp/tobacco-baseline-server.log 2>&1 &
+          sleep 2
+          node scripts/baseline/measure.cjs
+          BASELINE_URL=https://pikirenia.github.io/tobacco_cessacion_map/ node scripts/baseline/measure.cjs
+          bash scripts/baseline/lighthouse.sh
+      - name: Upload visual, axe, timing and Lighthouse artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-baseline-results
+          path: |
+            baseline-artifacts/
+            tests/baseline/visual.spec.cjs-snapshots/
+          retention-days: 30
+      - name: Confirm no production files were touched
+        if: always()
+        run: git status --short
