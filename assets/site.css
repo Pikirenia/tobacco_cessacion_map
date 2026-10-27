@@ -240,3 +240,8 @@ footer{padding-top:4px}
 
 .country-sort-field{display:none}
 @media(max-width:720px){.country-sort-field{display:flex;flex:1 1 100%;align-items:flex-start}.country-sort-field select{width:100%;max-width:330px;min-height:44px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:8px;font:inherit}}
+
+.country-table-pagination{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap;margin-top:10px}
+.country-table-pagination button{min-height:44px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font:inherit;cursor:pointer}
+.country-table-pagination button:disabled{opacity:.6;cursor:default}
+#countryTablePage{font-variant-numeric:tabular-nums;color:var(--ink)}
