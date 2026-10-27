@@ -276,7 +276,7 @@ function bind(sel,getD){
     });
   })
      .on("pointerleave",function(e){ if(e.pointerType==="mouse"&&!pinned) hide()})
-     .on("click",function(e){ const d=getD(this); if(!d) return; e.stopPropagation(); focusSource=this; show(d,this,e.clientX,e.clientY,true)})
+     .on("click",function(e){ const d=getD(this); if(!d) return; e.stopPropagation(); focusSource=document.getElementById("q"); show(d,this,e.clientX,e.clientY,true)})
      .attr("tabindex",-1).attr("aria-hidden","true")
      .attr("aria-label",null)
      .on("keydown",function(e){
