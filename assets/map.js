@@ -124,7 +124,7 @@ function paint(){
   meta.hidden=!isTB;
   meta.textContent=TB.year ? "WHO estimates for "+TB.year+" | Snapshot created: "+(TB.updated||"unknown").slice(0,10)
     +(compare?" | TB incidence >"+tbCutoff+" per 100,000; colours show medicine availability":"")
-    : "WHO estimates not yet synchronized. Data will appear after the first successful automated update.";
+    : "WHO estimates could not be loaded. TB values are shown as No data; retry loading the page.";
   svg.attr("aria-label",compare?"World map comparing smoking cessation medicine availability in countries with TB incidence above "+tbCutoff+" per 100,000"
     :isTB?(mode==="tb-incidence"?"World map of estimated TB incidence per 100,000":"World map of estimated smoking-attributable tuberculosis cases"):"World map of smoking cessation medicine availability");
   const leg=compare?LEG_TB_ACCESS:isTB?TB_LEGENDS[mode]:(view==="all"?LEG_ALL:view==="full"?LEG_FULL:LEG_ONE);
