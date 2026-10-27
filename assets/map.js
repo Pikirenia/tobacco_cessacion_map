@@ -1,6 +1,12 @@
+if(typeof DATA==="undefined" || !DATA || Object.keys(DATA).length===0)throw new Error("Medicine country data unavailable");
+if(typeof d3==="undefined")throw new Error("D3 failed to load");
+if(typeof topojson==="undefined")throw new Error("TopoJSON library failed to load");
+if(typeof TOPO==="undefined" || !TOPO.objects || !TOPO.objects.countries)throw new Error("Geographic topology unavailable");
+const hasWHO=typeof TB_DATA!=="undefined" && TB_DATA && Number.isInteger(TB_DATA.year) && TB_DATA.countries && Object.keys(TB_DATA.countries).length>=120;
+if(!hasWHO && window.__mapBoot)window.__mapBoot.show("WHO tuberculosis estimates could not be loaded. Medicine availability remains usable; TB values are shown as No data until you retry.");
 const DRUGS=["NRT","Varenicline","Cytisine","Bupropion"];
 const RET={A:"Available",U:"Unavailable",X:"Uncertain"};
-const TB=typeof TB_DATA!=="undefined" ? TB_DATA : {year:null,updated:null,countries:{}};
+const TB=hasWHO ? TB_DATA : {year:null,updated:null,countries:{}};
 const TB_LEGENDS={
   "tb-incidence":[["tb0","<10"],["tb1","10–49"],["tb2","50–99"],["tb3","100–199"],["tb4","200–399"],["tb5","≥400"],["nd","No data"]],
   "tb-smoking":[["tb0","0"],["tb1","1–99"],["tb2","100–999"],["tb3","1,000–9,999"],["tb4","10,000–49,999"],["tb5","≥50,000"],["nd","No data"]]
@@ -449,3 +455,4 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",paint);
 // pageshow also fires after browsers restore persisted form controls and on BFCache return.
 window.addEventListener("pageshow",()=>requestAnimationFrame(paint));
 paint();
+if(window.__mapBoot)window.__mapBoot.markReady();;
