@@ -81,7 +81,13 @@ def numerical(raw):
     """Return None only for WHO missing markers, never for invalid real values."""
     if raw is None or str(raw).strip().lower() in MISSING:
         return None
-    value = str(raw).strip().replace(",", "")
+    value = str(raw).strip()
+    if "," in value:
+        # Accept canonical grouped thousands only. Treat a decimal comma or
+        # malformed grouping as an error, not silently as a different estimate.
+        if not re.fullmatch(r"[0-9]{1,3}(?:,[0-9]{3})+(?:\\.[0-9]+)?", value):
+            raise ValidationError("Ambiguous WHO numeric grouping: " + repr(raw))
+        value = value.replace(",", "")
     try:
         number = float(value)
     except ValueError as error:
