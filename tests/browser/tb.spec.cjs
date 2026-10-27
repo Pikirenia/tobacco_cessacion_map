@@ -129,7 +129,8 @@ test('TB incidence thresholds compare full, partial and unavailable medicine acc
   await expect(page.locator('#tbCutoff')).toBeHidden();
   await page.locator('#tbColorBy').selectOption('access');
   await expect(page.locator('#tbControls')).toBeHidden();
-  await expect(page.locator('#tbCutoff')).toBeVisible();
+  await expect(page.locator('#tbThresholdField')).toBeVisible();
+  await expect(page.locator('#tbThresholds button[aria-pressed="true"]')).toHaveAttribute('data-cutoff',/100|200|400/);
   await expect(page.locator('#tbCutoff')).toHaveValue('100');
   await expect(page.locator('#legend button')).toHaveCount(6);
   await expect(page.locator('#legend')).toContainText('0 confirmed available');
@@ -171,10 +172,10 @@ test('TB incidence thresholds compare full, partial and unavailable medicine acc
   expect(new Set(colors).size).toBe(4);
   expect(full.dimmed).toBe(false);
   await expect(page.locator('#tbMeta')).toContainText('>100');
-  await page.locator('#tbCutoff').selectOption('200');
+  await page.locator('#tbThresholds [data-cutoff="200"]').click();
   expect((await category('POL')).classKey).toBe('acc-below');
   expect((await category('BLR')).classKey).toBe('acc-one');
-  await page.locator('#tbCutoff').selectOption('400');
+  await page.locator('#tbThresholds [data-cutoff="400"]').click();
   expect((await category('BLR')).classKey).toBe('acc-below');
   expect((await category('ZWE')).classKey).toBe('acc-none');
   await expect(page.locator('#tbMeta')).toContainText('>400');
@@ -213,7 +214,8 @@ test('restored native select values immediately control the first TB layer rende
   });
   await page.locator('.map-mode [data-mode="tb-incidence"]').click();
   await expect(page.locator('#tbColorBy')).toHaveValue('access');
-  await expect(page.locator('#tbCutoff')).toBeVisible();
+  await expect(page.locator('#tbThresholdField')).toBeVisible();
+  await expect(page.locator('#tbThresholds button[aria-pressed="true"]')).toHaveAttribute('data-cutoff',/100|200|400/);
   await expect(page.locator('#tbCutoff')).toHaveValue('200');
   await expect(page.locator('#tbControls')).toBeHidden();
   await expect(page.locator('#legend')).toContainText('0 confirmed available');
@@ -236,7 +238,8 @@ test('pageshow resynchronizes controls restored after initial paint', async ({pa
     document.getElementById('tbCutoff').value='400';
     window.dispatchEvent(new Event('pageshow'))
   });
-  await expect(page.locator('#tbCutoff')).toBeVisible();
+  await expect(page.locator('#tbThresholdField')).toBeVisible();
+  await expect(page.locator('#tbThresholds button[aria-pressed="true"]')).toHaveAttribute('data-cutoff',/100|200|400/);
   await expect(page.locator('#tbMeta')).toContainText('>400');
   await expect(page.locator('#legend')).toContainText('Full package available');
   await expect(page.locator('#tbControls')).toBeHidden();
