@@ -58,7 +58,8 @@ class WhoTBTests(unittest.TestCase):
 
     def test_missing_values_never_become_zero(self):
         self.assertIsNone(tb.numerical(""))
-        self.assertIsNone(tb.numerical("-2"))
+        with self.assertRaises(tb.ValidationError):
+            tb.numerical("-2")
         self.assertEqual(tb.numerical("0"),0)
 
 
