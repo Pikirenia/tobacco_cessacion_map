@@ -47,6 +47,14 @@ def download_csv(url, attempts=3, opener=None, sleeper=time.sleep):
         try:
             with opener(request, timeout=90) as response:
                 data = response.read(MAX_DOWNLOAD + 1)
+                declared = response.headers.get("Content-Length") if getattr(response, "headers", None) else None
+                if declared is not None:
+                    try:
+                        expected = int(declared)
+                    except ValueError as error:
+                        raise ValidationError("Invalid WHO Content-Length header: " + repr(declared)) from error
+                    if expected != len(data):
+                        raise ValidationError(f"Truncated WHO response: expected {expected} bytes, got {len(data)}: {url}")
             if not data or len(data) > MAX_DOWNLOAD:
                 raise ValidationError("WHO CSV download empty or exceeds size limit: " + url)
             text = data.decode("utf-8-sig")
