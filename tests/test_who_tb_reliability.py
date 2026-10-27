@@ -111,16 +111,12 @@ class WHOValidation(unittest.TestCase):
             def __enter__(self): return self
             def __exit__(self, *args): return False
             def read(self, limit): return self.value
-        for payload in (b"", b"iso3,iso3,year\\nPOL,POL,2024",
-                        b"iso3,year\\nPOL,2024,extra", b"<html>Error</html>"):
+        for payload in (b"", b"iso3,iso3,year\nPOL,POL,2024",
+                        b"iso3,year\nPOL,2024,extra", b"<html>Error</html>"):
             with self.subTest(payload=payload):
                 if not payload:
                     with self.assertRaises(tb.ValidationError):
                         tb.download_csv("https://example.invalid", opener=lambda *a, **k: Response(payload))
-                elif payload.startswith(b"<html>"):
-                    rows = tb.download_csv("https://example.invalid", opener=lambda *a, **k: Response(payload))
-                    with self.assertRaises(tb.ValidationError):
-                        tb.incidence_by_year(rows)
                 else:
                     with self.assertRaises(tb.ValidationError):
                         tb.download_csv("https://example.invalid", opener=lambda *a, **k: Response(payload))
