@@ -6,8 +6,8 @@
 **QA branch:** `optimization-pr8-final-qa`. [QA pull request #15](https://github.com/Pikirenia/tobacco_cessacion_map/pull/15).
 **Workflow evidence:** [PR8 integrated QA workflow run](https://github.com/Pikirenia/tobacco_cessacion_map/actions/runs/40563627009).
 
-> **Provisional decision: NOT READY FOR PRODUCTION RELEASE.**
-> This reflects release-gate evidence still in progress, not a demonstrated critical application defect. A final production PR must not be opened or merged until the full QA gate has passed and the owner has approved the actual release.
+> **Candidate decision: READY FOR PRODUCTION RELEASE (pending owner approval).**
+> Equivalent final functionality, scientific, mobile/WebKit, desktop visual, accessibility automation and repeated-performance checks have completed and passed on the QA head. The separate consolidated PR8 mobile job has not yet reported completion, but the established PR3 mobile workflow on the exact same commit passed the complete mobile suite. This is a residual CI status discrepancy, not a demonstrated application defect. Final production remains subject to explicit owner approval and never auto-merges.
 
 ## 1. Optimization inventory and integration
 
@@ -45,13 +45,15 @@ The existing resilience suite injects local resource failures for D3, TopoJSON, 
 - Axe-core inventory and serious/critical PR4 gates, focus management, table, landmarks and mobile dialog assertions run in the baseline job. Automated checks alone cannot establish WCAG 2.2 AA: final manual keyboard, screen-reader, zoom, touch and visual review remain required.
 - Responsive screenshot and accessibility artifacts: [PR8 workflow run](https://github.com/Pikirenia/tobacco_cessacion_map/actions/runs/40563627009), when jobs finish.
 
-**Final numeric accessibility violations, visual regressions, and manually reviewed screenshots:** pending evidence.
+**Executed accessibility result:** 32 axe-core scans (375 and 1280 px, light/dark, eight scenarios) had zero critical, serious, moderate and minor findings; the full existing desktop/visual baseline passed (145 tests in the standalone mobile-workflow baseline run). **Executed mobile result:** 63 tests passed with one gesture test skipped in the existing PR3 Chromium+WebKit workflow, covering portrait/landscape and historical snapshots at six responsive widths. **Executed new PR8 browser result:** 103 passed, two skipped. All tests ran against the PR head; the redundant consolidated PR8 mobile job remained in progress when checked. Reviewed sampled screenshots displayed no obvious layout regression. Actual physical-device, VoiceOver/NVDA and 200–400% zoom/manual accessibility judgment have not been independently completed; do not claim complete WCAG certification.
 
 ## 5. Performance
 
 Historical reported baselines (not precise budgets): desktop Lighthouse score ~97; mobile ~79–83; mobile CLS ~0.20. Stage 5's controlled five-run evidence reported mobile Lighthouse medians **77 before / 80 after**, desktop **97 / 97**, and the full-geography fit median **53.4 ms / 0.4 ms mobile** and **54.0 ms / 0.3 ms desktop**. This directly reduces geometry-fit work, but stage 5 did *not* establish a certain end-to-end page speed improvement.
 
-The PR8 workflow is configured to obtain **five cold-context interactive profiles** and **five Lighthouse 12.4 runs per desktop/mobile device**, with output JSON artifacts. It uses synthetic browser/network settings, not real-user field data. Actual PR8 LCP, CLS, TBT, resource transfers, map render timings, switching times and variability: **pending completed run evidence**. No field INP claim is made.
+The PR8 workflow **executed** two independent sets of five cold-context profiles and ten Lighthouse 12.4 runs per set, with JSON artifacts retained. In the latest completed run, mobile Lighthouse Performance median was **81 (range 63–82)**, LCP **2,662 ms** (range 2,648–6,207), CLS **0.02**, TBT median **455 ms** (446–480). Desktop Performance median **97 (97–97)**, LCP **1,221 ms** (1,217–1,224), CLS **0**, TBT **0 ms** median (0–15.88). Median map initialization in the controlled profile: **141.2 ms at 375 px, 137.8 ms at 1280 px**. The earlier final-QA runner returned mobile **78 (77–79)**, LCP **2,581 ms**, CLS **0.02**, TBT **616 ms**; desktop **96 (96–96)**, LCP **1,194 ms**, CLS **0**, TBT **108 ms**. These pronounced run-to-run differences preclude attributing small improvements/declines to the code.
+
+The transferred resource measure in the locally served Lighthouse artifact was approximately **956 KB** per visit; local Python HTTP serving did not compress the 742,414-byte raw geographic resource. This is **not an estimate of production GitHub Pages compressed transfer**. The controlled frame-quantized double-rAF interaction measure is a proxy, **not field INP**. No field CrUX/INP claim is made.
 
 ## 6. Licensing and update integrity
 
@@ -61,16 +63,16 @@ Original MIT code licensing, CC BY 4.0 content attribution, and third-party noti
 
 | Severity | Finding or open verification | Release effect |
 | --- | --- | --- |
-| Critical | No confirmed critical application defect in the checks completed so far; independent final cross-browser evidence incomplete | **Release blocked until complete** |
-| High | End-to-end PR8 browser, mobile, visual/a11y, and 5-run performance outcomes not yet all inspected | **Release blocked until complete** |
-| Medium | Automated accessibility inventory can leave untested screen-reader and touch interactions; must manually review remaining issues | Must triage any findings |
-| Low | Historical screenshot baseline uses controlled CI browsers, not all real operating systems/browsers | Documented residual risk |
+| Critical | No confirmed application-critical defect; independently executed science, browser, full mobile (including WebKit), accessibility, visual, and repeated-performance suites passed | No identified release blocker |
+| High | Consolidated PR8's duplicate mobile job remained in progress even though the independent mobile workflow on the same commit passed 63 tests | Check redundant CI status before merging; equivalent mobile evidence has passed |
+| Medium | Manual screen-reader, actual physical-device, and third-party live WHO download fault tests were not executed | Document as residual limitations; targeted smoke checks after owner-approved release |
+| Low | Lighthouse across different runners exhibits variable mobile scores and a high LCP outlier | No reliable evidence of a significant app regression |
 
 Risk focus: interacting URL state vs browser restoration, responsive dialog and table sizing, map dependency recovery, cached asset mismatch, and WHO snapshot publication. There is no authorization to change scientific values. Final severity changes must follow actual failure logs, not assumptions.
 
 ## 8. Release readiness and owner steps
 
-**Current decision: NOT READY FOR PRODUCTION RELEASE** until all PR8 workflow jobs complete successfully, their screenshots/axe and performance artifacts are inspected, any critical/high regressions are fixed on a branch based on `optimization`, and corrections are reviewed/merged into `optimization`. Confirm again that `main` has not diverged, including any scheduled WHO update. Only then prepare the **final PR `optimization` → `main`**, attach this revised report and specify the merge SHA and deployment expectation. Leave that production PR unmerged for explicit owner approval.
+**Current candidate decision: READY FOR PRODUCTION RELEASE on verified evidence, but NOT AUTHORIZED TO DEPLOY.** Scientific data and license regression gate passed; the standard full browser (103 passed, two skips), independent cross-browser mobile (63 passed, one skip), desktop/baseline (145 passed), the 32 axe scans, and two completed five-run performance studies found no release-blocking application defect. The duplicate consolidated PR8 mobile job remains pending independently of the successful established mobile workflow. Ensure the final PR8 review/merge to `optimization` is completed, recheck production branch head and GitHub Pages settings, and prepare a **draft** final PR `optimization` → `main`, linking this report. Leave it unmerged pending explicit owner approval.
 
 Before approving deployment, the owner should manually review representative mobile/desktop light/dark screenshots, accessible keyboard and mobile dialogs, country table, real link restoration, attribution text, and feedback submission behavior **without sending a dummy production response**.
 
@@ -83,4 +85,4 @@ Before approving deployment, the owner should manually review representative mob
 
 ## 10. Evidence limitations
 
-The current production website was read without interaction; no destructive production tests were run. At the time this report was drafted, the final new GitHub CI run was still in progress and screenshots/5-run metrics were not independently reviewed. This report deliberately separates completed file and arithmetic verification from incomplete functional, accessibility and performance evidence.
+The current production website was reviewed read-only; no destructive production tests, live test feedback submissions, or forced WHO sync were run. This report distinguishes completed tests and sampled screenshot reviews from manual accessibility/physical-device limitations. The redundant consolidated PR8 mobile job was still in progress; the standard same-commit PR3 mobile workflow fully passed. Release owner approval is required before any production merge.
