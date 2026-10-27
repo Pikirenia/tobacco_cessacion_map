@@ -12,6 +12,7 @@ function annotate(s){
     ['const feats=','performance.mark("pr5:topology-start");\nconst feats='],
     ['const proj=','performance.mark("pr5:topology-end");\nconst proj='],
     ['const countries=','performance.mark("pr5:svg-start");\nconst countries='],
+    ['const path=','performance.mark("pr5:fit-end");\nconst path='],
     ['const dotData=','performance.mark("pr5:svg-end");\nconst dotData='],
     ['// tooltip','performance.mark("pr5:init-end");\n// tooltip']
   ];
@@ -55,6 +56,7 @@ async function main(){
             marks=Object.fromEntries(performance.getEntriesByType('mark').filter(x=>x.name.startsWith('pr5:')).map(x=>[x.name,x.startTime]));
       const durations={
         topology:marks['pr5:topology-end']-marks['pr5:topology-start'],
+        projectionFit:marks['pr5:fit-end']-marks['pr5:topology-end'],
         svgPaths:marks['pr5:svg-end']-marks['pr5:svg-start'],
         fullMapInitialization:marks['pr5:init-end']-marks['pr5:topology-start']
       };
@@ -92,6 +94,7 @@ async function main(){
       const src=performance.getEntriesByType('resource').map(r=>({name:r.name.split('/').pop(),duration:r.duration,transfer:r.transferSize,encoded:r.encodedBodySize}));
       return {nav:{domContentLoaded:nav.domContentLoadedEventEnd,load:nav.loadEventEnd,fcp:fcp?.startTime||null,
           lcp:window.__pr5.lcp,cls:window.__pr5.cls},durations,steps,resources:src,
+          projection:{scale:proj.scale(),translate:proj.translate(),center:proj.center(),rotate:proj.rotate()},
           countryPaths:document.querySelectorAll('path.country').length,
           mapCountries:Object.keys(DATA).length,
           mapLabel:document.querySelector('#map').getAttribute('aria-label')};
@@ -105,7 +108,7 @@ async function main(){
  for(const width of [375,1280]){
   const ss=all.samples.filter(s=>s.width===width);grouped[width]={samples:ss.length};
   for(const prop of ['fcp','lcp','cls','load'])grouped[width][prop]=summary(ss.map(x=>x.nav[prop]).filter(Number.isFinite));
-  for(const prop of ['topology','svgPaths','fullMapInitialization'])grouped[width][prop]=summary(ss.map(x=>x.durations[prop]));
+  for(const prop of ['topology','projectionFit','svgPaths','fullMapInitialization'])grouped[width][prop]=summary(ss.map(x=>x.durations[prop]));
   grouped[width].interactions=Object.fromEntries(ss[0].steps.map(({name})=>[
      name,{sync:summary(ss.map(x=>x.steps.find(y=>y.name===name).sync)),
       doubleRaf:summary(ss.map(x=>x.steps.find(y=>y.name===name).frames))}]));
@@ -113,6 +116,7 @@ async function main(){
  const dir=path.join(root,'performance-artifacts');
  fs.mkdirSync(dir,{recursive:true});
  fs.writeFileSync(path.join(dir,'playwright-profile.json'),JSON.stringify({...all,summary:grouped},null,2));
+ console.log('PR5_PROJECTION',JSON.stringify(all.samples[0].projection));
  console.log('PR5_PROFILE',JSON.stringify(grouped));
  if(all.samples.some(x=>x.errors.length||x.mapCountries!==195))process.exitCode=1;
 }
