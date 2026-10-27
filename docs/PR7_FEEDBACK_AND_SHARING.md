@@ -56,7 +56,9 @@ The same query strings are tested locally by Playwright against the PR branch. P
 - `npm run test:browser`: existing browser suites plus PR7 browser tests in desktop Chrome, mobile Chromium and mobile WebKit.
 - `npx playwright test -c playwright.baseline.config.cjs`: existing accessibility, visual and functional baseline, where applicable.
 - PR7 browser tests capture responsive before/after *candidate* views of feedback initially collapsed and expanded, and the TB access map share state. The CI workflow uploads `test-results/` with PNG screenshots; no live submissions.
-- Existing historical screenshots are preserved. New screenshots are distinct artifacts rather than overwriting previously approved PR1–PR4 references.
+- Existing historical screenshots are preserved. New screenshots are distinct artifacts rather than overwriting previously approved PR1–PR4 references. The previous 320px WebKit PR4 snapshots contained a transient country-hover tooltip instead of the unobstructed map. Two replacement *versioned* PR7 references were captured for clean light/dark WebKit states, leaving the PR4 files untouched. The baseline and mobile suites continue to exercise all original interaction checks.
+
+**Reviewable PR7 screenshot evidence:** [desktop and mobile form, map and share toolbar PNGs](https://github.com/Pikirenia/tobacco_cessacion_map/actions/runs/40524985133/artifacts/12743306760). This artifact accompanies a successful PR7 dedicated browser run; new-commit tests must also pass before approval.
 
 ### Scope and limitations
 
