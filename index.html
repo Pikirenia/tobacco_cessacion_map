@@ -114,6 +114,19 @@
   <p id="countryTableHelp">Search and sort all study countries without using the geographic map. Available, unavailable and uncertain refer to practical retail access. “No data” means a missing TB estimate, not zero.</p>
   <div class="country-table-tools">
     <div class="toolbar-field"><label for="countryTableSearch">Search countries</label><input type="search" id="countryTableSearch" placeholder="Country name" autocomplete="off"></div>
+    <div class="toolbar-field country-sort-field">
+      <label for="countrySort">Sort table</label>
+      <select id="countrySort">
+        <option value="name:asc">Country A to Z</option><option value="name:desc">Country Z to A</option>
+        <option value="nrt:asc">NRT ascending</option><option value="nrt:desc">NRT descending</option>
+        <option value="varenicline:asc">Varenicline ascending</option><option value="varenicline:desc">Varenicline descending</option>
+        <option value="cytisine:asc">Cytisine ascending</option><option value="cytisine:desc">Cytisine descending</option>
+        <option value="bupropion:asc">Bupropion ascending</option><option value="bupropion:desc">Bupropion descending</option>
+        <option value="full:asc">Full package ascending</option><option value="full:desc">Full package descending</option>
+        <option value="incidence:asc">TB incidence ascending</option><option value="incidence:desc">TB incidence descending</option>
+        <option value="smoking:asc">Smoking-attributable TB cases ascending</option><option value="smoking:desc">Smoking-attributable TB cases descending</option>
+      </select>
+    </div>
     <p id="countryTableCount" role="status" aria-live="polite" aria-atomic="true"></p>
   </div>
   <div class="country-table-scroll" tabindex="0" role="region" aria-label="Country data results, scroll within this region on narrow screens">
