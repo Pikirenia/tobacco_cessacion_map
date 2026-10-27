@@ -6,6 +6,18 @@ on:
 permissions:
   contents: read
 jobs:
+  projection:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: bash scripts/baseline/install-deps.sh
+      - run: node scripts/performance/derive-projection.cjs
   profile:
     runs-on: ubuntu-24.04
     timeout-minutes: 50
