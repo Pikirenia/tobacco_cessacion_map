@@ -195,7 +195,7 @@ function v(x){return x==null?"—":x}
 function html(d){
   const n=avail(d), c=klass(d,"all");
   const pillTxt=d.r==="XXXX"?"No data":`${n} of 4 available`;
-  const light=(c==="c2"||c==="nd");
+  const light=["c1","c2","c3","nd"].includes(c);
   const full=fullSet(d);
   const tb=TB.countries && TB.countries[d.i] || {};
   const comparison=mode==="tb-incidence"&&tbColorBy==="access";
@@ -218,7 +218,7 @@ function html(d){
     <dt>WHO OTC/Rx</dt><dd>${v(d.d[i])}</dd>
     <dt>WHO reimbursed</dt><dd>${v(d.m[i])}</dd>
     </dl></article>`).join("");
-  return `<h2>${d.n}</h2>
+  return `<h2 id="countryTipTitle">${d.n}</h2>
   <div class="sum"><span class="pill${light?" light":""}" style="background:${fillFor(c)};${c==="nd"?"border:1px solid "+css("--nodata-stroke"):""}">${pillTxt}</span>${full?"Full package available":"Full package not confirmed available"}</div>
   ${tbText}${comparisonText}<table><thead><tr><th>Medicine</th><th>Retail 2026</th><th>WHO sold</th><th>OTC/Rx</th><th>Reimbursed</th></tr></thead><tbody>${rows}</tbody></table><section class="medicine-cards" aria-label="Medicine availability and WHO access details">${cards}</section>
   <div class="foot">NRT on national essential medicines list (WHO): ${v(d.e)}</div>`;
@@ -242,9 +242,10 @@ function show(d,el,x,y,pin){
   tip.classList.toggle("sheet",pin&&narrow()); tip.classList.toggle("pinned",!!pin&&!narrow());
   tip.classList.add("on");
   tip.setAttribute("aria-hidden",pin?"false":"true");
+  if(pin)tip.setAttribute("aria-modal",String(narrow()));else tip.removeAttribute("aria-modal");
   if(!(pin&&narrow())) place(x,y); else {tip.style.left="";tip.style.top="";}
   pinned=pin?d:null;
-  if(pin&&narrow()) {
+  if(pin){
     if(!focusSource) focusSource=document.activeElement;
     tip.querySelector(".x").focus({preventScroll:true});
   }
@@ -252,9 +253,11 @@ function show(d,el,x,y,pin){
 function hide(){
   cancelAnimationFrame(moveFrame);moveFrame=0;pointer=null;
   const restore=focusSource;
+  if(pinned && restore && restore.isConnected)restore.focus({preventScroll:true});
+  else if(pinned && tip.contains(document.activeElement))document.getElementById("q").focus({preventScroll:true});
   tip.classList.remove("on","sheet","pinned");tip.setAttribute("aria-hidden","true");
+  tip.removeAttribute("aria-modal");
   pinned=null;shownData=null;tipSize=null;hot(null);focusSource=null;
-  if(restore && restore.isConnected && narrow()) restore.focus({preventScroll:true});
 }
 window.addEventListener("resize",()=>{
   if(pinned) hide();
@@ -273,8 +276,8 @@ function bind(sel,getD){
   })
      .on("pointerleave",function(e){ if(e.pointerType==="mouse"&&!pinned) hide()})
      .on("click",function(e){ const d=getD(this); if(!d) return; e.stopPropagation(); focusSource=this; show(d,this,e.clientX,e.clientY,true)})
-     .attr("tabindex",0).attr("role","button")
-     .attr("aria-label",function(){const d=getD(this);return d?d.n+" country details":"Country details"})
+     .attr("tabindex",-1).attr("aria-hidden","true")
+     .attr("aria-label",null)
      .on("keydown",function(e){
        if(e.key!=="Enter"&&e.key!==" ")return;
        const d=getD(this);if(!d)return;
@@ -286,7 +289,19 @@ bind(countries,el=>DATA[d3.select(el).datum().id]);
 bind(dots,el=>DATA[d3.select(el).datum().id]);
 bind(targets,el=>DATA[d3.select(el).datum().id]);
 svg.on("click",()=>{ if(pinned) hide() });
-document.addEventListener("keydown",e=>{if(e.key==="Escape")hide()});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape" && pinned){e.preventDefault();hide();return;}
+  if(e.key!=="Tab" || !pinned || !narrow())return;
+  const controls=[...tip.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])')]
+    .filter(el=>el.getClientRects().length);
+  if(!controls.length){e.preventDefault();tip.focus();return;}
+  const first=controls[0],last=controls[controls.length-1];
+  if(e.shiftKey && (document.activeElement===first || document.activeElement===tip)){
+    e.preventDefault();last.focus();
+  }else if(!e.shiftKey && document.activeElement===last){
+    e.preventDefault();first.focus();
+  }
+});
 
 // Data layers share the geography and country tooltip.
 d3.selectAll(".map-mode button").on("click",function(){
@@ -336,6 +351,70 @@ document.getElementById("q").addEventListener("change",function(){
   if(reduced()){svg.call(zoom.transform,target);present();}
   else svg.transition().duration(500).call(zoom.transform,target).on("end",present);
 });
+
+
+/* The country table is derived from DATA, TB and the map's classification functions. */
+const tableSearch=document.getElementById("countryTableSearch");
+const tableBody=document.querySelector("#countryTable tbody");
+const tableCount=document.getElementById("countryTableCount");
+const tableHeaders=[...document.querySelectorAll("#countryTable thead th")];
+const tableLabels={
+  name:"Country",nrt:"NRT",varenicline:"Varenicline",cytisine:"Cytisine",
+  bupropion:"Bupropion",full:"Full package",incidence:"TB incidence per 100,000",
+  smoking:"Smoking-attributable TB cases"
+};
+const tableRows=Object.values(DATA).map(d=>{
+  const tb=TB.countries?.[d.i]||{};
+  return {name:d.n,nrt:RET[d.r[0]],varenicline:RET[d.r[1]],
+    cytisine:RET[d.r[2]],bupropion:RET[d.r[3]],
+    full:RET[fullPackageStatus(d)],incidence:Number.isFinite(tb.incidence)?tb.incidence:null,
+    smoking:Number.isFinite(tb.smoking)?tb.smoking:null};
+});
+let tableSort="name",tableAscending=true;
+function renderCountryTable(){
+  const query=tableSearch.value.trim().toLocaleLowerCase();
+  const items=tableRows.filter(row=>row.name.toLocaleLowerCase().includes(query));
+  items.sort((a,b)=>{
+    const av=a[tableSort],bv=b[tableSort];
+    // Missing numeric observations sort last in either direction; zero is not missing.
+    if(av===null)return bv===null?0:1;
+    if(bv===null)return -1;
+    const c=typeof av==="number"?av-bv:String(av).localeCompare(String(bv),"en",{sensitivity:"base"});
+    return (tableAscending?1:-1)*c || a.name.localeCompare(b.name,"en");
+  });
+  const frag=document.createDocumentFragment();
+  for(const row of items){
+    const tr=document.createElement("tr");
+    for(const key of Object.keys(tableLabels)){
+      const cell=document.createElement(key==="name"?"th":"td");
+      if(key==="name")cell.scope="row";
+      cell.dataset.label=tableLabels[key];
+      cell.textContent=key==="incidence"||key==="smoking"?num(row[key]):row[key];
+      if((key==="incidence"||key==="smoking")&&row[key]===null)cell.classList.add("missing");
+      tr.appendChild(cell);
+    }
+    frag.appendChild(tr);
+  }
+  tableBody.replaceChildren(frag);
+  tableCount.textContent=items.length+" of "+tableRows.length+" countries shown";
+  for(const th of tableHeaders){
+    if(th.dataset.key===tableSort)th.setAttribute("aria-sort",tableAscending?"ascending":"descending");
+    else th.removeAttribute("aria-sort");
+    const b=th.querySelector("button");
+    const direction=th.dataset.key===tableSort?", sorted "+(tableAscending?"ascending":"descending"):"";
+    b.setAttribute("aria-label","Sort by "+tableLabels[th.dataset.key]+direction);
+  }
+}
+tableSearch.addEventListener("input",renderCountryTable);
+document.querySelectorAll("#countryTable [data-sort]").forEach(button=>{
+  button.addEventListener("click",()=>{
+    const key=button.dataset.sort;
+    if(key===tableSort)tableAscending=!tableAscending;
+    else {tableSort=key;tableAscending=true;}
+    renderCountryTable();
+  });
+});
+renderCountryTable();
 
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change",paint);
 // pageshow also fires after browsers restore persisted form controls and on BFCache return.
