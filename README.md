@@ -1,6 +1,6 @@
-# Smoking cessation medicines and tuberculosis
+# Smoking cessation medicines
 
-Interactive world map of legal retail availability of four smoking cessation medicines (NRT, varenicline, cytisine and bupropion) in 195 countries, plus two WHO-modelled TB indicators: annual incidence per 100,000 population and estimated annual TB cases attributable to smoking.
+Interactive world map of legal retail availability of four smoking cessation medicines (NRT, varenicline, cytisine and bupropion) in 195 countries, plus two WHO-modelled TB indicators and IHME GBD 2023 age-standardized lung cancer incidence for adults aged 50–79.
 
 **Live map:** https://pikirenia.github.io/tobacco_cessacion_map/
 
@@ -8,7 +8,7 @@ Interactive world map of legal retail availability of four smoking cessation med
 
 - **Colour** — number of medicines with confirmed retail availability (0–4). White: status of all four medicines is uncertain (no data). Grey: territories outside the 195-country study.
 - **Tooltip** (hover or tap) — retail status per medicine, WHO "legally sold" status (2024), dispensing category (OTC/Rx), reimbursement, and inclusion of NRT in the national essential medicines list.
-- **Layer switch** — medicines, WHO TB incidence per 100,000, or WHO smoking-attributable TB cases. The original per-medicine availability views remain unchanged.
+- **Layer switch** — medicines, WHO TB incidence, WHO smoking-attributable TB cases, or GBD 2023 lung cancer incidence (ages 50–79). The original per-medicine availability views remain unchanged.
 - **Combined exploration** — in either TB layer, filter/highlight countries by retail availability of an individual medicine or the Full package; country tooltips display both TB measures and medicine availability.
 - **High-incidence medicine access comparison** — in the TB incidence layer switch "TB incidence display" to "Medicine access comparison", then select a strict threshold (>100, >200, or >400 per 100,000). Above-threshold countries are coloured red for **0 confirmed available medicines**, light green for **exactly 1**, medium green for **2 or 3 medicines without the full package**, and dark green for **full package confirmed available** (NRT + bupropion + either varenicline or cytisine). Countries at/below the threshold are muted and missing TB estimates remain distinct. The red category is *no confirmed retail availability*, which can include UNCERTAIN medicine statuses; it is not a claim that all medicines have been confirmed unavailable.
 
@@ -26,6 +26,27 @@ Interactive world map of legal retail availability of four smoking cessation med
 - `data/smoking_cessation_COUNTRY_FINAL_EN.xlsx` — country-level summary workbook
 - `data/by_country.csv` — retail status and WHO "legally sold" status per country
 - `data/who_detail.csv` — WHO dispensing, reimbursement and essential medicines list fields
+
+## IHME GBD 2023 lung cancer incidence (static, non-commercial data)
+
+The **Lung cancer** layer shows annual modelled incidence of tracheal, bronchus and lung cancer (GBD cause 426; ICD-10 C33–C34) among adults aged 50–79, per 100,000, age-standardized within this age range. Both sexes, Male and Female are derived separately from their respective GBD rates, not by averaging sex-specific rates. The six Segi–Doll standard weights for ages 50–54 through 75–79 are 5,000; 4,000; 4,000; 3,000; 2,000; 1,000, normalized to 19,000. The GBD reference year is 2023.
+
+Incidence display uses <50, 50–99.9, 100–149.9 and ≥150. **Medicine access comparison** uses cumulative, inclusive thresholds **Moderate+ ≥50**, **High+ ≥100**, and **Very high ≥150**, for the selected sex. These are project-specific descriptive thresholds, not categories defined by IHME or WHO. The access colour scheme matches the TB comparison: red means zero medicines confirmed available (not necessarily all confirmed unavailable), light green one, green two or three without Full package, and dark green Full package. Lower-incidence countries are muted; missing data are not zero.
+
+GBD 2023 original export: **204 locations × six ages × three sex categories = 3,672 observations**. The existing medicine study remains **195 countries**; all 195 map to explicitly validated ISO3 codes. The nine other GBD locations (American Samoa, Bermuda, Greenland, Guam, Northern Mariana Islands, Puerto Rico, Taiwan, Tokelau and US Virgin Islands) are not added to the medicine study. No country observations were imputed.
+
+To reproduce using an *authorized local export* from the [GBD Results Tool](https://vizhub.healthdata.org/gbd-results/):
+
+```sh
+python3 scripts/build_lung_cancer.py --input /path/to/IHME-GBD_2023_DATA.csv --check
+# Omit --check to rebuild the derived static data resource after validation.
+```
+
+The original IHME export is **not stored or published** in the repository. The compact `data/lung-cancer-data.js` resource contains only the 195 study-country derived rates, without uncertainty intervals. The build script independently verifies 204 locations, six age groups per sex, unique and nonnegative observations, ISO3 matching, expected full-GBD category counts and reference country rates. There is no live IHME API call or automatic synchronization.
+
+Interpretation: total lung cancer incidence is **not** smoking-attributable cancer incidence or present-day smoking prevalence. It partly reflects smoking exposure accumulated over decades, but also other risk factors, cancer surveillance, ascertainment and modelling uncertainty. A disease-burden/medicine-access mismatch must not be interpreted causally.
+
+**IHME terms:** The [Free-of-Charge Non-Commercial User Agreement](https://www.ihmeclientservices.org/noncommercial.html) governs use of the IHME-derived data. Source: Institute for Health Metrics and Evaluation. Used with permission. All rights reserved. These data are **not licensed under the website's CC BY 4.0**; IHME does not endorse the site. See [third-party notices](THIRD_PARTY_NOTICES.md).
 
 ## WHO tuberculosis estimates (automatically synchronized)
 
@@ -49,7 +70,7 @@ Source: [WHO Global Tuberculosis Programme](https://www.who.int/teams/global-pro
 ## Technical notes
 
 Static `index.html`, `assets/map.js` (D3 v7, topojson-client), shared `assets/site.css`
-and map dataset in `data/map-data.js`; WHO TB estimates are independently generated in `data/tb-data.js`. Unchanged Natural Earth/world-atlas 50m
+and map dataset in `data/map-data.js`; WHO TB estimates are independently generated in `data/tb-data.js`, and the GBD-derived layer has a separate static resource `data/lung-cancer-data.js`. Unchanged Natural Earth/world-atlas 50m
 geometry is in `data/world-topology.js`, cached independently of page edits.
 Scripts use `defer` and execute in dependency order. No production build step or new runtime dependencies.
 

@@ -41,7 +41,7 @@ test('semantic landmarks, named country dialog, keyboard dismissal, restored foc
   await expect(page.getByRole('contentinfo')).toHaveCount(1);
   await expect(page.getByRole('region',{name:'Geographic exploration'})).toHaveCount(1);
   await expect(page.getByRole('region',{name:'Methods and data interpretation'})).toHaveCount(1);
-  await expect(page.getByRole('table',{name:'Smoking cessation medicines and tuberculosis, by country'})).toHaveCount(1);
+  await expect(page.getByRole('table',{name:'Smoking cessation medicine access, tuberculosis and lung cancer burden, by country'})).toHaveCount(1);
   await page.locator('#q').fill('Poland');
   await page.locator('#q').dispatchEvent('change');
   await expect(page.getByRole('dialog',{name:'Poland'})).toBeVisible();

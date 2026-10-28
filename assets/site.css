@@ -8,6 +8,7 @@
   --panel:#ffffff; --panel-line:#dfe5e8;
   --c0:#b3303c; --c1:#e27b4e; --c2:#eec35a; --c3:#88b96b; --c4:#2e7a52; --nodata:#ffffff; --nodata-stroke:#8e9ca4;
   --tb0:#f1eff6; --tb1:#dadaeb; --tb2:#bcbddc; --tb3:#9e9ac8; --tb4:#756bb1; --tb5:#54278f;
+  --lc0:#eff6ff; --lc1:#9ecae1; --lc2:#4292c6; --lc3:#08519c;
   --acc-full:#185a35; --acc-two:#329b59; --acc-one:#82c991; --acc-one-stroke:#245f39; --acc-none:#c43844;
   --acc-uncertain:#a1adb5; --acc-below:#edf0f2;
   --focus:#1f5f99; --link:#155b8f;
@@ -97,11 +98,11 @@ a:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid va
 .tip td:first-child{font-weight:600}
 .st{display:inline-flex;align-items:center;gap:6px}
 .st i{width:10px;height:10px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.2)}
-.tb-summary{border-top:1px solid var(--panel-line);padding:8px 0 6px;margin:8px 0 2px;font-size:.85rem}
-.tb-summary strong{display:block;margin-bottom:3px}
-.tb-summary dl{display:grid;grid-template-columns:1fr auto;gap:3px 12px;margin:0}
-.tb-summary dt{color:var(--muted)}
-.tb-summary dd{margin:0;font-variant-numeric:tabular-nums;font-weight:600}
+.tb-summary,.lung-summary{border-top:1px solid var(--panel-line);padding:8px 0 6px;margin:8px 0 2px;font-size:.85rem}
+.tb-summary strong,.lung-summary strong{display:block;margin-bottom:3px}
+.tb-summary dl,.lung-summary dl{display:grid;grid-template-columns:1fr auto;gap:3px 12px;margin:0}
+.tb-summary dt,.lung-summary dt{color:var(--muted)}
+.tb-summary dd,.lung-summary dd{margin:0;font-variant-numeric:tabular-nums;font-weight:600}
 .tip .foot{font-size:.8rem;color:var(--muted);margin-top:8px}
 .tip .x{position:absolute;right:8px;top:8px;width:44px;height:44px;border:0;background:none;color:var(--muted);font-size:20px;line-height:1;cursor:pointer;display:none}
 .tip.sheet .x,.tip.pinned .x{display:block}
@@ -154,8 +155,8 @@ svg#map{height:100%}
   .tb-incidence-controls,.tb-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:7px}
   .tb-incidence-controls .toolbar-field,.tb-controls .toolbar-field{min-width:0;width:100%}
   .tb-controls select,.tb-incidence-controls select{width:100%;min-width:0;max-width:100%;font-size:.82rem;text-overflow:ellipsis}
-  .tb-incidence-controls #tbThresholdField{grid-column:1 / -1}
-  #tbThresholds{width:100%;justify-content:space-around}
+  .tb-incidence-controls #tbThresholdField,.tb-incidence-controls #lungThresholdField{grid-column:1 / -1}
+  #tbThresholds,#lungThresholds{width:100%;justify-content:space-around}
   .find input{min-height:40px}
   .mapbox{aspect-ratio:auto;height:clamp(320px,55svh,520px);min-width:0;touch-action:pan-y}
   svg#map{width:100%;height:100%;touch-action:pan-y;cursor:default}
@@ -183,8 +184,8 @@ svg#map{height:100%}
   .tip.sheet .medicine-card dl{margin:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:4px 10px;font-size:.82rem}
   .tip.sheet .medicine-card dt{color:var(--muted)}
   .tip.sheet .medicine-card dd{margin:0;min-width:0;overflow-wrap:anywhere}
-  .tip.sheet .tb-summary dl{grid-template-columns:minmax(0,1fr) auto}
-  .tip.sheet .tb-summary dd{text-align:right}
+  .tip.sheet .tb-summary dl,.tip.sheet .lung-summary dl{grid-template-columns:minmax(0,1fr) auto}
+  .tip.sheet .tb-summary dd,.tip.sheet .lung-summary dd{text-align:right}
 }
 @media(min-width:641px){#zoverview{display:none}}
 @media(max-width:360px){
@@ -260,3 +261,15 @@ footer{padding-top:4px}
 #shareFallback{flex:1 1 100%;min-width:0}
 #shareFallback label{display:block;font-size:.84rem;font-weight:600}
 #shareURL{display:block;width:min(100%,620px);min-width:0;margin-top:4px;font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px}
+
+/* GBD 2023 lung cancer incidence; sequential contrast remains distinct from TB violet. */
+.lung-summary .selected-rate{font-weight:700;color:var(--ink)}
+.lung-summary small{display:block;color:var(--muted);font-size:.75rem;margin-top:5px}
+#lungControls select{width:auto;max-width:100%}
+@media(max-width:640px){
+  #lungControls{width:100%}
+  #lungControls .toolbar-field{min-width:0}
+  #lungControls select{width:100%}
+  #lungThresholds{flex-wrap:wrap;gap:2px;overflow-x:visible}
+  #lungThresholds button{flex:1 1 29%;min-width:0;white-space:normal;font-size:.76rem;line-height:1.2;padding:6px 3px}
+}

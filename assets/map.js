@@ -4,6 +4,9 @@ if(typeof topojson==="undefined")throw new Error("TopoJSON library failed to loa
 if(typeof TOPO==="undefined" || !TOPO.objects || !TOPO.objects.countries)throw new Error("Geographic topology unavailable");
 const hasWHO=typeof TB_DATA!=="undefined" && TB_DATA && Number.isInteger(TB_DATA.year) && TB_DATA.countries && Object.keys(TB_DATA.countries).length>0;
 if(!hasWHO && window.__mapBoot)window.__mapBoot.show("WHO tuberculosis estimates could not be loaded. Medicine availability remains usable; TB values are shown as No data until you retry.");
+const hasLung=typeof LUNG_DATA!=="undefined" && LUNG_DATA && LUNG_DATA.year===2023 && LUNG_DATA.countries && Object.keys(LUNG_DATA.countries).length>0;
+if(!hasLung && window.__mapBoot)window.__mapBoot.show("GBD 2023 lung cancer estimates could not be loaded. Medicines and tuberculosis layers remain usable.");
+const LUNG=hasLung ? LUNG_DATA : {year:null,countries:{}};
 const DRUGS=["NRT","Varenicline","Cytisine","Bupropion"];
 const RET={A:"Available",U:"Unavailable",X:"Uncertain"};
 const TB=hasWHO ? TB_DATA : {year:null,updated:null,countries:{}};
@@ -31,6 +34,28 @@ function tbAccessClass(d){
   if(count===1) return "acc-one";
   return "acc-none";
 }
+const LEG_LUNG_RATE=[
+  ["lc0","<50"],["lc1","50–99.9"],["lc2","100–149.9"],["lc3","≥150"],["nd","No lung cancer data"]
+];
+const LEG_LUNG_ACCESS=[
+  ["acc-none","0 confirmed available"],["acc-one","1 medicine available"],
+  ["acc-two","2–3 medicines, no full package"],["acc-full","Full package available"],
+  ["acc-below","Below selected incidence threshold"],["nd","No lung cancer data"]
+];
+function lungValue(d){const row=LUNG.countries[d.i];return row?row[lungSex]:null;}
+function lungClass(d){
+  const x=lungValue(d);
+  if(!Number.isFinite(x))return "nd";
+  return x<50?"lc0":x<100?"lc1":x<150?"lc2":"lc3";
+}
+function lungAccessClass(d){
+  const x=lungValue(d);
+  if(!Number.isFinite(x))return "nd";
+  if(x<lungCutoff)return "acc-below"; // Inclusive ≥ for lung cancer, unlike TB's >.
+  if(fullSet(d))return "acc-full";
+  const count=avail(d);
+  return count>=2?"acc-two":count===1?"acc-one":"acc-none";
+}
 const LEG_TB_ACCESS=[
   ["acc-none","0 confirmed available"],
   ["acc-one","1 medicine available"],
@@ -43,7 +68,7 @@ const LEG_TB_ACCESS=[
 let palette={};
 function refreshPalette(){
   const style=getComputedStyle(document.documentElement);
-  for(const name of ["--nodata","--nodata-stroke","--c0","--c1","--c2","--c3","--c4","--tb0","--tb1","--tb2","--tb3","--tb4","--tb5","--acc-full","--acc-one","--acc-two","--acc-none","--acc-below"])
+  for(const name of ["--nodata","--nodata-stroke","--c0","--c1","--c2","--c3","--c4","--tb0","--tb1","--tb2","--tb3","--tb4","--tb5","--acc-full","--acc-one","--acc-two","--acc-none","--acc-below","--lc0","--lc1","--lc2","--lc3"])
     palette[name]=style.getPropertyValue(name).trim();
 }
 const css=n=>palette[n];
@@ -70,6 +95,7 @@ const LEG_FULL=[["c4","Full package available"],["c0","Full package unavailable"
 
 let view="all", mode="medicines", focusClass=null, tbDrug="any", tbStatus="A";
 let tbColorBy="rate", tbCutoff=100;
+let lungColorBy="rate", lungSex="both", lungCutoff=50;
 const svg=d3.select("#map"), W=1000, H=520;
 svg.attr("viewBox",`0 0 ${W} ${H}`);
 const feats=topojson.feature(TOPO,TOPO.objects.countries).features;
@@ -110,14 +136,25 @@ function paint(){
   tbCutoff=selectedCutoff;
   tbDrug=document.getElementById("tbMedicine").value;
   tbStatus=document.getElementById("tbStatus").value;
+  const cancerDisplay=document.getElementById("lungColorBy").value;
+  const cancerCutoff=Number(document.getElementById("lungCutoff").value);
+  const cancerSex=document.getElementById("lungSex").value;
+  const sexChanged=lungSex!==cancerSex;
+  if(cancerDisplay!==lungColorBy||cancerCutoff!==lungCutoff||sexChanged)focusClass=null;
+  lungColorBy=cancerDisplay;lungCutoff=cancerCutoff;lungSex=cancerSex;
   refreshPalette();
-  const isTB=mode!=="medicines";
+  const isTB=mode==="tb-incidence"||mode==="tb-smoking";
+  const isLung=mode==="lung-cancer";
   const compare=mode==="tb-incidence"&&tbColorBy==="access";
+  const lungCompare=isLung&&lungColorBy==="access";
   document.getElementById("medicineViewField").hidden=isTB;
   document.getElementById("medicineViews").hidden=isTB;
   document.getElementById("tbIncidenceControls").hidden=mode!=="tb-incidence";
   document.getElementById("tbControls").hidden=!isTB||compare;
   document.getElementById("tbThresholdField").hidden=!compare;
+  document.getElementById("lungControls").hidden=!isLung;
+  document.getElementById("lungThresholdField").hidden=!lungCompare;
+  d3.selectAll("#lungThresholds button").attr("aria-pressed",function(){return Number(this.dataset.cutoff)===lungCutoff;});
   // The native select is an invisible restoration mirror; only the segment is interactive.
   d3.selectAll("#tbThresholds button").attr("aria-pressed",function(){return Number(this.dataset.cutoff)===tbCutoff;});
   const meta=document.getElementById("tbMeta");
@@ -125,10 +162,18 @@ function paint(){
   meta.textContent=TB.year ? "WHO estimates for "+TB.year+" | Snapshot created: "+(TB.updated||"unknown").slice(0,10)
     +(compare?" | TB incidence >"+tbCutoff+" per 100,000; colours show medicine availability":"")
     : "WHO estimates could not be loaded. TB values are shown as No data; retry loading the page.";
-  svg.attr("aria-label",compare?"World map comparing smoking cessation medicine availability in countries with TB incidence above "+tbCutoff+" per 100,000"
+  const lungMeta=document.getElementById("lungMeta");
+  lungMeta.hidden=!isLung;
+  lungMeta.textContent=hasLung
+    ? "IHME GBD 2023 | Ages 50–79 | "+({both:"Both sexes",male:"Male",female:"Female"}[lungSex])
+      +(lungCompare?" | Incidence ≥"+lungCutoff+"/100,000; colours show medicine access":"")
+    : "Lung cancer estimates unavailable. Other map layers remain functional.";
+  svg.attr("aria-label",lungCompare?"World map comparing medicine availability where 2023 lung cancer incidence is at least "+lungCutoff+" per 100,000, ages 50–79"
+    :isLung?"World map of 2023 lung cancer incidence among adults aged 50–79 per 100,000"
+    :compare?"World map comparing smoking cessation medicine availability in countries with TB incidence above "+tbCutoff+" per 100,000"
     :isTB?(mode==="tb-incidence"?"World map of estimated TB incidence per 100,000":"World map of estimated smoking-attributable tuberculosis cases"):"World map of smoking cessation medicine availability");
-  const leg=compare?LEG_TB_ACCESS:isTB?TB_LEGENDS[mode]:(view==="all"?LEG_ALL:view==="full"?LEG_FULL:LEG_ONE);
-  const classify=d=>compare?tbAccessClass(d):isTB?tbClass(d):klass(d,view);
+  const leg=lungCompare?LEG_LUNG_ACCESS:isLung?LEG_LUNG_RATE:compare?LEG_TB_ACCESS:isTB?TB_LEGENDS[mode]:(view==="all"?LEG_ALL:view==="full"?LEG_FULL:LEG_ONE);
+  const classify=d=>lungCompare?lungAccessClass(d):isLung?lungClass(d):compare?tbAccessClass(d):isTB?tbClass(d):klass(d,view);
   function dim(d,c){
     if(focusClass && (focusClass==="full"?!fullSet(d):c!==focusClass))return true;
     return isTB && !compare && tbDrug!=="any" && (
@@ -219,6 +264,17 @@ function html(d){
       "acc-below":"Below or equal to incidence threshold",
       "nd":"TB incidence data unavailable"
     }[tbAccessClass(d)])+'</div>':'';
+  const cancer=LUNG.countries[d.i]||{};
+  const cancerText='<div class="lung-summary"><strong>Lung cancer incidence (GBD 2023, ages 50–79)</strong>'+
+    '<dl>'+[["both","Both sexes"],["male","Male"],["female","Female"]].map(([sex,label])=>
+      '<dt'+(lungSex===sex?' class="selected-rate"':'')+'>'+label+'</dt><dd'+(lungSex===sex?' class="selected-rate"':'')+'>'+num(cancer[sex])+'</dd>'
+    ).join("")+'</dl><small>New cases per 100,000 per year; age-standardized.</small></div>';
+  const lungComparisonText=mode==="lung-cancer"&&lungColorBy==="access"?
+    '<div class="foot">Lung cancer incidence threshold: ≥'+lungCutoff+' per 100,000 ('+
+    ({both:"both sexes",male:"male",female:"female"}[lungSex])+'). Category: '+
+    ({"acc-full":"Full package available","acc-two":"Two or three medicines confirmed available without full package",
+      "acc-one":"One medicine confirmed available","acc-none":"Zero confirmed available (uncertain status is possible)",
+      "acc-below":"Below selected threshold","nd":"Lung cancer incidence data unavailable"}[lungAccessClass(d)])+'</div>':'';
   const tbText='<div class="tb-summary"><strong>WHO tuberculosis estimates'+(TB.year?' ('+TB.year+')':'')+'</strong>'+
     '<dl><dt>TB incidence / 100,000</dt><dd>'+num(tb.incidence)+'</dd>'+
     '<dt>Smoking-attributable TB cases</dt><dd>'+num(tb.smoking)+'</dd></dl></div>';
@@ -231,7 +287,7 @@ function html(d){
     </dl></article>`).join("");
   return `<h2 id="countryTipTitle">${d.n}</h2>
   <div class="sum"><span class="pill${light?" light":""}" style="background:${fillFor(c)};${c==="nd"?"border:1px solid "+css("--nodata-stroke"):""}">${pillTxt}</span>${full?"Full package available":"Full package not confirmed available"}</div>
-  ${tbText}${comparisonText}<table><thead><tr><th>Medicine</th><th>Retail 2026</th><th>WHO sold</th><th>OTC/Rx</th><th>Reimbursed</th></tr></thead><tbody>${rows}</tbody></table><section class="medicine-cards" aria-label="Medicine availability and WHO access details">${cards}</section>
+  ${tbText}${cancerText}${comparisonText}${lungComparisonText}<table><thead><tr><th>Medicine</th><th>Retail 2026</th><th>WHO sold</th><th>OTC/Rx</th><th>Reimbursed</th></tr></thead><tbody>${rows}</tbody></table><section class="medicine-cards" aria-label="Medicine availability and WHO access details">${cards}</section>
   <div class="foot">NRT on national essential medicines list (WHO): ${v(d.e)}</div>`;
 }
 function place(x,y){
@@ -335,6 +391,20 @@ d3.selectAll("#tbThresholds button").on("click",function(){
   }
   paint();recordMapState();
 });
+document.getElementById("lungColorBy").addEventListener("change",function(){
+  lungColorBy=this.value;focusClass=null;hide();paint();recordMapState();
+});
+document.getElementById("lungSex").addEventListener("change",function(){
+  lungSex=this.value;focusClass=null;paint();renderCountryTable();recordMapState();
+});
+document.getElementById("lungCutoff").addEventListener("change",function(){
+  lungCutoff=Number(this.value);focusClass=null;hide();paint();recordMapState();
+});
+d3.selectAll("#lungThresholds button").on("click",function(){
+  const select=document.getElementById("lungCutoff");
+  if(select.value!==this.dataset.cutoff){select.value=this.dataset.cutoff;lungCutoff=Number(select.value);focusClass=null;hide();}
+  paint();recordMapState();
+});
 document.getElementById("tbMedicine").addEventListener("change",function(){tbDrug=this.value;paint();recordMapState();});
 document.getElementById("tbStatus").addEventListener("change",function(){tbStatus=this.value;paint();recordMapState();});
 
@@ -357,6 +427,9 @@ function snapshotMapState() {
     threshold:document.getElementById("tbCutoff").value,
     medicine:document.getElementById("tbMedicine").value,
     status:document.getElementById("tbStatus").value,
+    cancerDisplay:document.getElementById("lungColorBy").value,
+    cancerSex:document.getElementById("lungSex").value,
+    cancerThreshold:document.getElementById("lungCutoff").value,
     country:pinned ? pinned.i : ""
   };
 }
@@ -410,9 +483,13 @@ function restoreMapURL() {
     document.getElementById("tbCutoff").value=state.threshold;
     document.getElementById("tbMedicine").value=state.medicine;
     document.getElementById("tbStatus").value=state.status;
+    document.getElementById("lungColorBy").value=state.cancerDisplay;
+    document.getElementById("lungSex").value=state.cancerSex;
+    document.getElementById("lungCutoff").value=state.cancerThreshold;
     d3.selectAll(".map-mode button").attr("aria-pressed",function(){return this.dataset.mode===mode;});
     d3.selectAll("#medicineViews button").attr("aria-pressed",function(){return this.dataset.view===view;});
     paint();
+    renderCountryTable();
     if(state.country)selectCountry(byISO[state.country],true);
     else {
       document.getElementById("q").value="";
@@ -457,18 +534,22 @@ const tableHeaders=[...document.querySelectorAll("#countryTable thead th")];
 const tableLabels={
   name:"Country",nrt:"NRT",varenicline:"Varenicline",cytisine:"Cytisine",
   bupropion:"Bupropion",full:"Full package",incidence:"TB incidence per 100,000",
-  smoking:"Smoking-attributable TB cases"
+  smoking:"Smoking-attributable TB cases",lung:"GBD 2023 lung cancer, ages 50–79, per 100,000"
 };
 const tableRows=Object.values(DATA).map(d=>{
   const tb=TB.countries?.[d.i]||{};
   return {name:d.n,nrt:RET[d.r[0]],varenicline:RET[d.r[1]],
     cytisine:RET[d.r[2]],bupropion:RET[d.r[3]],
-    full:RET[fullPackageStatus(d)],incidence:Number.isFinite(tb.incidence)?tb.incidence:null,
-    smoking:Number.isFinite(tb.smoking)?tb.smoking:null};
+    iso:d.i,full:RET[fullPackageStatus(d)],incidence:Number.isFinite(tb.incidence)?tb.incidence:null,
+    smoking:Number.isFinite(tb.smoking)?tb.smoking:null,lung:null};
 });
 let tableSort="name",tableAscending=true,tablePage=0;
 const tablePageSize=25;
 function renderCountryTable(){
+  tableLabels.lung="Lung cancer "+({both:"both sexes",male:"male",female:"female"}[lungSex])+" (GBD 2023, ages 50–79, per 100,000)";
+  const lungButton=document.querySelector('#countryTable [data-sort="lung"]');
+  lungButton.textContent=tableLabels.lung;
+  for(const row of tableRows){const value=LUNG.countries[row.iso]?.[lungSex];row.lung=Number.isFinite(value)?value:null;}
   const query=tableSearch.value.trim().toLocaleLowerCase();
   const items=tableRows.filter(row=>row.name.toLocaleLowerCase().includes(query));
   items.sort((a,b)=>{
@@ -490,8 +571,8 @@ function renderCountryTable(){
       const cell=document.createElement(key==="name"?"th":"td");
       if(key==="name")cell.scope="row";
       cell.dataset.label=tableLabels[key];
-      cell.textContent=key==="incidence"||key==="smoking"?num(row[key]):row[key];
-      if((key==="incidence"||key==="smoking")&&row[key]===null)cell.classList.add("missing");
+      cell.textContent=key==="incidence"||key==="smoking"||key==="lung"?num(row[key]):row[key];
+      if((key==="incidence"||key==="smoking"||key==="lung")&&row[key]===null)cell.classList.add("missing");
       tr.appendChild(cell);
     }
     frag.appendChild(tr);
@@ -538,7 +619,7 @@ renderCountryTable();
 
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change",paint);
 // pageshow also fires after browsers restore persisted form controls and on BFCache return.
-window.addEventListener("pageshow",()=>requestAnimationFrame(paint));
+window.addEventListener("pageshow",()=>requestAnimationFrame(()=>{paint();renderCountryTable();}));
 // URL is authoritative for direct links; no-query pages retain native form restoration.
 if(window.location.search)restoreMapURL();else paint();
 if(window.__mapBoot)window.__mapBoot.markReady();

@@ -18,6 +18,24 @@ the general terms for data.who.int; the terms and metadata for the specific
 source take precedence. Other linked registries, pharmacy websites and
 publications likewise retain their own terms.
 
+## IHME Global Burden of Disease 2023
+
+The GBD 2023 modelled estimates for tracheal, bronchus and lung cancer,
+ages 50–79, are sourced from the Institute for Health Metrics and Evaluation (IHME).
+The resource `data/lung-cancer-data.js` contains a restricted, age-standardized
+derived publication result for 195 study countries. The original exported
+GBD CSV is deliberately not redistributed. The reproducible
+`scripts/build_lung_cancer.py` script accepts a locally authorized export.
+
+**Required attribution:** Source: Institute for Health Metrics and Evaluation.
+Used with permission. All rights reserved.
+
+Use is subject to IHME's
+[Free-of-Charge Non-Commercial User Agreement](https://www.ihmeclientservices.org/noncommercial.html).
+The GBD figures are **not** covered by the project's CC BY 4.0 licence
+and may not be republished commercially under that licence.
+This project is independent of IHME and does not imply IHME endorsement.
+
 ## Geography
 
 The world topology uses [world-atlas](https://github.com/topojson/world-atlas),
