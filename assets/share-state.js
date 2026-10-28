@@ -3,15 +3,18 @@
   "use strict";
   const defaults = Object.freeze({
     layer:"medicines", view:"all", display:"rate", threshold:"100",
-    medicine:"any", status:"A", country:""
+    medicine:"any", status:"A", cancerDisplay:"rate", cancerSex:"both", cancerThreshold:"50", country:""
   });
   const allowed = {
-    layer:["medicines","tb-incidence","tb-smoking"],
+    layer:["medicines","tb-incidence","tb-smoking","lung-cancer"],
     view:["all","full","0","1","2","3"],
     display:["rate","access"],
     threshold:["100","200","400"],
     medicine:["any","full","0","1","2","3"],
-    status:["A","U","X"]
+    status:["A","U","X"],
+    cancerDisplay:["rate","access"],
+    cancerSex:["both","male","female"],
+    cancerThreshold:["50","100","150"]
   };
   function read(search, countryIds) {
     const params = new URLSearchParams(search);
