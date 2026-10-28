@@ -489,6 +489,7 @@ function restoreMapURL() {
     d3.selectAll(".map-mode button").attr("aria-pressed",function(){return this.dataset.mode===mode;});
     d3.selectAll("#medicineViews button").attr("aria-pressed",function(){return this.dataset.view===view;});
     paint();
+    renderCountryTable();
     if(state.country)selectCountry(byISO[state.country],true);
     else {
       document.getElementById("q").value="";
@@ -618,7 +619,7 @@ renderCountryTable();
 
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change",paint);
 // pageshow also fires after browsers restore persisted form controls and on BFCache return.
-window.addEventListener("pageshow",()=>requestAnimationFrame(paint));
+window.addEventListener("pageshow",()=>requestAnimationFrame(()=>{paint();renderCountryTable();}));
 // URL is authoritative for direct links; no-query pages retain native form restoration.
 if(window.location.search)restoreMapURL();else paint();
 if(window.__mapBoot)window.__mapBoot.markReady();
