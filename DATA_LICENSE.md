@@ -22,8 +22,8 @@ website and in the repository. It applies to those contributions wherever
 distributed, including CSV, JavaScript and spreadsheet representations.
 
 Files containing both original and third-party material are not wholly
-relicensed by this notice. In particular, WHO-reported indicators and source
-extracts retain the applicable original source terms. The grant does not
+relicensed by this notice. In particular, WHO-reported indicators, IHME GBD-derived lung cancer incidence estimates,
+and other source extracts retain the applicable original source terms. The grant does not
 claim exclusive rights in facts or public-domain material, and does not
 license third-party quotations or private feedback submissions.
 
