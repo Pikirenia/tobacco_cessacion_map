@@ -51,7 +51,7 @@ test('country tooltip, numeric table and sharable country/sex view restore corre
   await expect(page.locator('.tip.on .lung-summary')).toContainText('206.36');
   await expect(page.locator('.tip.on .lung-summary')).toContainText('143.84');
   await expect(page.locator('.tip.on .lung-summary')).toContainText('92.97');
-  await expect(page.locator('.tip.on .foot')).toContainText('≥150');
+  await expect(page.locator('.tip.on .foot').first()).toContainText('≥150');
   await page.locator('#countrySort').evaluate(el=>{el.value='lung:desc';el.dispatchEvent(new Event('change',{bubbles:true}));});
   await expect(page.locator('#countryTable tbody tr').first()).toContainText('Monaco');
   await page.locator('#lungSex').selectOption('female');
@@ -79,6 +79,6 @@ test('narrow viewport controls never cause horizontal overflow',async({page},tes
     await expect(page.locator('#lungThresholdField')).toBeVisible();
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth+1);
     expect(overflow, 'horizontal document overflow at '+w).toBe(false);
-    if(w===375)await page.screenshot({path:testInfo.outputPath('mobile-'+w+'-'+testInfo.project.name+'.png'),fullPage:true});
+    if(w===375)await page.screenshot({path:testInfo.outputPath('mobile-'+w+'-'+testInfo.project.name+'.png'),fullPage:false});
   }
 });
