@@ -54,10 +54,12 @@ test('country tooltip, numeric table and sharable country/sex view restore corre
   await expect(page.locator('.tip.on .foot')).toContainText('≥150');
   await page.locator('#countrySort').evaluate(el=>{el.value='lung:desc';el.dispatchEvent(new Event('change',{bubbles:true}));});
   await expect(page.locator('#countryTable tbody tr').first()).toContainText('Monaco');
+  await page.locator('#lungSex').selectOption('female');
+  await expect(page).toHaveURL(/cancerSex=female/);
   await page.goBack();
   await expect(page.locator('#lungSex')).toHaveValue('male');
   await page.goForward();
-  await expect(page.locator('#lungSex')).toHaveValue('male');
+  await expect(page.locator('#lungSex')).toHaveValue('female');
 });
 test('old medicine and TB links remain valid and switch repeatedly without errors',async({page})=>{
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
