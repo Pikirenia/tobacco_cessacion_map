@@ -13,7 +13,7 @@ for(const layer of ['medicines','tb-incidence','tb-smoking','lung-cancer']){
   for(const threshold of ['100','200','400']){
     for(const medicine of ['any','full','0','1','2','3']){
       for(const status of ['A','U','X']){
-        const state={layer,view:'full',display:'access',threshold,medicine,status,country:'POL'};
+        const state={...defaults,layer,view:'full',display:'access',threshold,medicine,status,country:'POL'};
         assert.equal(JSON.stringify(read('?'+serialize(state),countries)),JSON.stringify(state));
       }
     }
