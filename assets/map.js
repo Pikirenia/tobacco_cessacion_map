@@ -271,7 +271,7 @@ function html(d){
     ).join("")+'</dl><small>New cases per 100,000 per year; age-standardized.</small></div>';
   const lungComparisonText=mode==="lung-cancer"&&lungColorBy==="access"?
     '<div class="foot">Lung cancer incidence threshold: ≥'+lungCutoff+' per 100,000 ('+
-    ({both:"both sexes",male:"male",female:"female"}[lungSex]+'). Category: '+
+    ({both:"both sexes",male:"male",female:"female"}[lungSex])+'). Category: '+
     ({"acc-full":"Full package available","acc-two":"Two or three medicines confirmed available without full package",
       "acc-one":"One medicine confirmed available","acc-none":"Zero confirmed available (uncertain status is possible)",
       "acc-below":"Below selected threshold","nd":"Lung cancer incidence data unavailable"}[lungAccessClass(d)])+'</div>':'';
