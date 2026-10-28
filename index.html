@@ -3,18 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Smoking cessation medicines and tuberculosis</title>
+<title>Smoking cessation medicines | TB and lung cancer burden</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/site.css?v=4cfe44864015">
+<link rel="stylesheet" href="assets/site.css?v=f062fb61d5bd">
 </head>
 <body>
 <a class="skip-link" href="#countryData">Skip interactive map to country data</a>
 <div class="wrap">
 <header>
-  <h1>Smoking cessation medicines and tuberculosis</h1>
-  <p>Explore legal retail availability of four smoking cessation medicines in 195 countries, alongside WHO estimates of tuberculosis incidence and smoking-attributable TB cases. Select a map layer and hover over or tap a country for details.</p>
+  <h1>Smoking cessation medicines</h1>
+  <p>Explore legal retail availability of four smoking cessation medicines in 195 countries, alongside WHO tuberculosis estimates and IHME GBD 2023 lung cancer incidence among adults aged 50–79. Select a map layer and hover over or tap a country for details.</p>
 </header>
 <nav class="feedback-nav" aria-label="Contribute"><a class="button-link" href="feedback/">Submit country feedback</a></nav>
 
@@ -27,6 +27,7 @@
       <button type="button" data-mode="medicines" aria-pressed="true">Medicines</button>
       <button type="button" data-mode="tb-incidence" aria-pressed="false">TB incidence</button>
       <button type="button" data-mode="tb-smoking" aria-pressed="false">Smoking-attributable TB</button>
+      <button type="button" data-mode="lung-cancer" aria-pressed="false">Lung cancer</button>
     </div>
   </div>
   <div class="controls">
@@ -62,6 +63,36 @@
             <option value="100">&gt;100 / 100,000</option>
             <option value="200">&gt;200 / 100,000</option>
             <option value="400">&gt;400 / 100,000</option>
+          </select>
+        </div>
+      </div>
+      <div id="lungControls" class="tb-incidence-controls lung-controls" hidden>
+        <div class="toolbar-field">
+          <label for="lungColorBy">Lung cancer visualization</label>
+          <select id="lungColorBy">
+            <option value="rate">Incidence rate</option>
+            <option value="access">Medicine access comparison</option>
+          </select>
+        </div>
+        <div class="toolbar-field">
+          <label for="lungSex">Sex</label>
+          <select id="lungSex">
+            <option value="both">Both sexes</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+        <div class="toolbar-field" id="lungThresholdField" hidden>
+          <span class="toolbar-label" id="lungCutoffLabel">Lung cancer incidence threshold per 100,000 (inclusive)</span>
+          <div class="seg threshold-seg" id="lungThresholds" role="group" aria-labelledby="lungCutoffLabel">
+            <button type="button" data-cutoff="50" aria-pressed="true">Moderate+ ≥50</button>
+            <button type="button" data-cutoff="100" aria-pressed="false">High+ ≥100</button>
+            <button type="button" data-cutoff="150" aria-pressed="false">Very high ≥150</button>
+          </div>
+          <select id="lungCutoff" aria-label="Restored lung cancer threshold" tabindex="-1" hidden>
+            <option value="50">≥50 / 100,000</option>
+            <option value="100">≥100 / 100,000</option>
+            <option value="150">≥150 / 100,000</option>
           </select>
         </div>
       </div>
@@ -115,12 +146,13 @@
 </div>
 <ul class="legend" id="legend" aria-label="Interactive map legend"></ul>
 <p id="tbMeta" class="hint" aria-live="polite" hidden></p>
-<p class="hint" id="mapAlternative">For a keyboard and screen-reader accessible alternative to the map, use the searchable country data table below. Select a legend item to highlight its countries. In TB incidence, choose "Medicine access comparison" to colour countries above a selected incidence threshold by cessation medicine availability. Other countries are muted. Small island states are shown as dots. On mobile, scroll with one finger and use two fingers to manipulate the map. Use World for the full map. On desktop, drag to pan. Scroll normally to move the page; hold Ctrl while scrolling over the map to zoom, or use the + and − buttons.</p>
+<p id="lungMeta" class="hint" aria-live="polite" hidden></p>
+<p class="hint" id="mapAlternative">For a keyboard and screen-reader accessible alternative to the map, use the searchable country data table below. Select a legend item to highlight its countries. In TB or lung cancer incidence, choose "Medicine access comparison" to colour countries above a selected incidence threshold by cessation medicine availability. Other countries are muted. Small island states are shown as dots. On mobile, scroll with one finger and use two fingers to manipulate the map. Use World for the full map. On desktop, drag to pan. Scroll normally to move the page; hold Ctrl while scrolling over the map to zoom, or use the + and − buttons.</p>
 </section>
 
 <section id="countryData" class="country-data" aria-labelledby="countryDataTitle">
   <h2 id="countryDataTitle">Country data table</h2>
-  <p id="countryTableHelp">Search and sort all study countries without using the geographic map. Available, unavailable and uncertain refer to practical retail access. “No data” means a missing TB estimate, not zero.</p>
+  <p id="countryTableHelp">Search and sort all study countries without using the geographic map. Available, unavailable and uncertain refer to practical retail access. “No data” means missing epidemiological data, not zero.</p>
   <div class="country-table-tools">
     <div class="toolbar-field"><label for="countryTableSearch">Search countries</label><input type="search" id="countryTableSearch" placeholder="Country name" autocomplete="off"></div>
     <div class="toolbar-field country-sort-field">
@@ -134,13 +166,14 @@
         <option value="full:asc">Full package ascending</option><option value="full:desc">Full package descending</option>
         <option value="incidence:asc">TB incidence ascending</option><option value="incidence:desc">TB incidence descending</option>
         <option value="smoking:asc">Smoking-attributable TB cases ascending</option><option value="smoking:desc">Smoking-attributable TB cases descending</option>
+        <option value="lung:asc">Lung cancer incidence ascending</option><option value="lung:desc">Lung cancer incidence descending</option>
       </select>
     </div>
     <p id="countryTableCount" role="status" aria-live="polite" aria-atomic="true"></p>
   </div>
   <div class="country-table-scroll" tabindex="0" role="region" aria-label="Country data results, scroll within this region on narrow screens">
     <table id="countryTable" aria-describedby="countryTableHelp">
-      <caption>Smoking cessation medicines and tuberculosis, by country</caption>
+      <caption>Smoking cessation medicine access, tuberculosis and lung cancer burden, by country</caption>
       <thead><tr>
         <th scope="col" data-key="name" aria-sort="ascending"><button type="button" data-sort="name">Country</button></th>
         <th scope="col" data-key="nrt"><button type="button" data-sort="nrt">NRT</button></th>
@@ -150,6 +183,7 @@
         <th scope="col" data-key="full"><button type="button" data-sort="full">Full package</button></th>
         <th scope="col" data-key="incidence"><button type="button" data-sort="incidence">TB incidence per 100,000</button></th>
         <th scope="col" data-key="smoking"><button type="button" data-sort="smoking">Smoking-attributable TB cases</button></th>
+        <th scope="col" data-key="lung"><button type="button" data-sort="lung">Lung cancer incidence (GBD 2023, ages 50–79), per 100,000</button></th>
       </tr></thead>
       <tbody></tbody>
     </table>
@@ -168,12 +202,16 @@
   <p>“Full package” means NRT, bupropion and at least one of varenicline or cytisine are all available. A package is unavailable only when at least one required component is confirmed unavailable; otherwise it may be uncertain.</p>
   <p><b>Tuberculosis layers</b> display WHO modelled annual estimates, not notified case counts. TB incidence is expressed per 100,000 people. Smoking-attributable TB is the estimated annual number of incident cases attributable to smoking among adults (aged 15+), not the number of patients with TB who smoke. Risk factors may overlap. All TB estimates on the map use the latest common reference year available from both WHO CSV sources. Missing data are not interpreted as zero.</p>
   <p><b>TB incidence + medicine access comparison:</b> For countries strictly above the chosen incidence threshold, red means zero medicines confirmed available, light green means exactly one available, green means two or three available but not the full package, and dark green means the full package is available (NRT + bupropion + varenicline or cytisine). Zero confirmed available does not necessarily mean confirmed unavailability: individual medicine statuses may be uncertain. Countries at or below the threshold are muted, and missing TB incidence data remain separate.</p>
+  <p><b>Lung cancer layer:</b> Annual estimated incidence of tracheal, bronchus and lung cancer (ICD-10 C33–C34; GBD cause 426) among people aged 50–79, per 100,000 population. Rates were age-standardized separately for both sexes, men and women using Segi–Doll world standard population weights, restricted to six five-year age groups from 50–54 to 75–79 and normalized by their total weight (19,000). These estimates are not crude age-specific rates or all-age age-standardized rates.</p>
+  <p><b>GBD 2023 thresholds:</b> Moderate+ ≥50, High+ ≥100, and Very high ≥150 per 100,000, inclusive. These are descriptive categories defined by this project, not official IHME or WHO classifications. The lung cancer medicine-access comparison uses the same confirmed-access interpretation as TB, with incidence below the selected threshold muted and missing estimates distinguished from zero.</p>
+  <p><b>Interpretation:</b> Lung cancer incidence partly reflects smoking exposure accumulated over decades but is not a direct indicator of present-day smoking prevalence. Other risk factors, diagnostic practices, surveillance, demographic history and modelling uncertainty affect comparisons. High burden with limited access identifies a geographic mismatch, not evidence that current medicine access caused historical lung cancer incidence. Total lung cancer incidence must not be interpreted as smoking-attributable incidence.</p>
+  <p><b>IHME source and licensing:</b> Global Burden of Disease Study 2023, Institute for Health Metrics and Evaluation, <a href="https://vizhub.healthdata.org/gbd-results/">GBD Results Tool</a>. Source: Institute for Health Metrics and Evaluation. Used with permission. All rights reserved. GBD-derived estimates are subject to IHME's <a href="https://www.ihmeclientservices.org/noncommercial.html">Free-of-Charge Non-Commercial User Agreement</a>, not this project's CC BY 4.0 licence. IHME does not endorse this website.</p>
   <p><b>WHO TB sources:</b> <a href="https://extranet.who.int/tme/generateCSV.asp?ds=estimates">TB burden estimates</a> and <a href="https://extranet.who.int/tme/generateCSV.asp?ds=estimates_age_sex">incidence disaggregated by risk factors</a>. <a href="https://www.who.int/teams/global-programme-on-tuberculosis-and-lung-health/data">WHO documentation and terms</a>. Estimates are synchronized automatically and may be retrospectively revised.</p>
 </section>
 </main>
 <footer aria-label="Project credits and licenses">
 <p class="credit">Created and maintained by PhD, MD Uladzimir Pikirenia (<a href="mailto:pikireniauladzimir@gmail.com">pikireniauladzimir@gmail.com</a>)</p>
-<p class="credit">Original data and text: <a href="https://creativecommons.org/licenses/by/4.0/" rel="license">CC BY 4.0</a>. Code: <a href="https://github.com/Pikirenia/tobacco_cessacion_map/blob/main/LICENSE">MIT</a>. <a href="https://github.com/Pikirenia/tobacco_cessacion_map/blob/main/THIRD_PARTY_NOTICES.md">Third-party terms</a>.</p>
+<p class="credit">Original project data and text (excluding third-party GBD and WHO material): <a href="https://creativecommons.org/licenses/by/4.0/" rel="license">CC BY 4.0</a>. Code: <a href="https://github.com/Pikirenia/tobacco_cessacion_map/blob/main/LICENSE">MIT</a>. <a href="https://github.com/Pikirenia/tobacco_cessacion_map/blob/main/THIRD_PARTY_NOTICES.md">Third-party terms</a>.</p>
 </footer>
 </div>
 
@@ -195,6 +233,7 @@ window.__mapBoot=(function(){
     const body=document.querySelector("#countryTable tbody");
     if(!body || body.children.length)return;
     const tb=typeof TB_DATA!=="undefined"&&TB_DATA.countries?TB_DATA.countries:{};
+    const lung=typeof LUNG_DATA!=="undefined"&&LUNG_DATA.countries?LUNG_DATA.countries:{};
     const status={A:"Available",U:"Unavailable",X:"Uncertain"};
     const frag=document.createDocumentFragment();
     for(const d of Object.values(DATA).sort((a,b)=>a.n.localeCompare(b.n))){
@@ -203,7 +242,7 @@ window.__mapBoot=(function(){
       const knownMissing=d.r[0]==="U"||d.r[3]==="U"||(d.r[1]==="U"&&d.r[2]==="U");
       const row=tb[d.i]||{};
       for(const value of [d.n,...d.r.split("").map(x=>status[x]),full?"Available":knownMissing?"Unavailable":"Uncertain",
-        row.incidence??"No data",row.smoking??"No data"]){
+        row.incidence??"No data",row.smoking??"No data",lung[d.i]?.both??"No data"]){
         const cell=document.createElement(tr.children.length?"td":"th");
         if(!tr.children.length)cell.scope="row";
         cell.textContent=value;
@@ -234,10 +273,11 @@ window.__mapBoot=(function(){
 </script>
 <script src="data/map-data.js?v=c7f4287c253c" defer></script>
 <script src="data/tb-data.js?v=cea40730fbc6" defer></script>
+<script src="data/lung-cancer-data.js?v=62058f565ceb" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js" defer></script>
 <script src="data/world-topology.js?v=66d88d29c081" defer></script>
-<script src="assets/share-state.js?v=2a24b9f86e38" defer></script>
-<script src="assets/map.js?v=dc9318a57ca6" defer></script>
+<script src="assets/share-state.js?v=e01e99cf637e" defer></script>
+<script src="assets/map.js?v=99a8c039489a" defer></script>
 </body>
 </html>
