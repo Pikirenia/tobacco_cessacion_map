@@ -30,14 +30,16 @@ assert.deepEqual(bands(Object.values(D.countries).map(c=>c.male)),[62,46,39,48])
 assert.deepEqual(bands(Object.values(D.countries).map(c=>c.female)),[141,36,15,3]);
 // Exercise the actual front-end boundary classifier, not a duplicated comparison.
 const mapCode=fs.readFileSync('assets/map.js','utf8');
-const classifier=mapCode.match(/function lungAccessClass\\(d\\)\\{[\\s\\S]*?\\n\\}/);
+const classifierStart=mapCode.indexOf('function lungAccessClass(d){');
+const classifierEnd=mapCode.indexOf('\n}',classifierStart);
+const classifier=classifierStart<0||classifierEnd<0?null:mapCode.slice(classifierStart,classifierEnd+2);
 assert(classifier,'lungAccessClass is missing from map code');
 const context={
   lungCutoff:50,lungValue:d=>d.rate,
   fullSet:d=>d.r[0]==='A'&&d.r[3]==='A'&&(d.r[1]==='A'||d.r[2]==='A'),
   avail:d=>(d.r.match(/A/g)||[]).length
 };
-vm.runInNewContext(classifier[0],context);
+vm.runInNewContext(classifier,context);
 for(const threshold of [50,100,150]){
   context.lungCutoff=threshold;
   assert.equal(context.lungAccessClass({rate:threshold-.001,r:'AUUU'}),'acc-below');
