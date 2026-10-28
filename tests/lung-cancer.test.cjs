@@ -28,9 +28,23 @@ const bands=values=>[values.filter(v=>v<50).length,
 assert.deepEqual(bands(Object.values(D.countries).map(c=>c.both)),[90,54,38,13]);
 assert.deepEqual(bands(Object.values(D.countries).map(c=>c.male)),[62,46,39,48]);
 assert.deepEqual(bands(Object.values(D.countries).map(c=>c.female)),[141,36,15,3]);
+// Exercise the actual front-end boundary classifier, not a duplicated comparison.
+const mapCode=fs.readFileSync('assets/map.js','utf8');
+const classifier=mapCode.match(/function lungAccessClass\\(d\\)\\{[\\s\\S]*?\\n\\}/);
+assert(classifier,'lungAccessClass is missing from map code');
+const context={
+  lungCutoff:50,lungValue:d=>d.rate,
+  fullSet:d=>d.r[0]==='A'&&d.r[3]==='A'&&(d.r[1]==='A'||d.r[2]==='A'),
+  avail:d=>(d.r.match(/A/g)||[]).length
+};
+vm.runInNewContext(classifier[0],context);
 for(const threshold of [50,100,150]){
-  assert.equal(threshold>=threshold,true,'equality must be inclusive');
-  assert.equal(threshold-.001>=threshold,false,'just below must be excluded');
+  context.lungCutoff=threshold;
+  assert.equal(context.lungAccessClass({rate:threshold-.001,r:'AUUU'}),'acc-below');
+  assert.equal(context.lungAccessClass({rate:threshold,r:'AUUU'}),'acc-one');
+  assert.equal(context.lungAccessClass({rate:threshold,r:'AAAA'}),'acc-full');
+  assert.equal(context.lungAccessClass({rate:threshold,r:'UUUU'}),'acc-none');
+  assert.equal(context.lungAccessClass({rate:null,r:'UUUU'}),'nd');
 }
 const page=fs.readFileSync('index.html','utf8');
 assert(page.includes('data/lung-cancer-data.js?v='));
