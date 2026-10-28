@@ -1,0 +1,46 @@
+name: Lung cancer layer validation
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'assets/**'
+      - 'data/lung-cancer-data.js'
+      - 'index.html'
+      - 'scripts/build_lung_cancer.py'
+      - 'scripts/version_assets.py'
+      - 'tests/**'
+      - 'package.json'
+      - '.github/workflows/lung-cancer-validation.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  lung-cancer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: python3 -m py_compile scripts/build_lung_cancer.py
+      - run: node --check assets/map.js
+      - run: node --check assets/share-state.js
+      - run: npm test
+      - run: npm run check:data
+      - run: python3 scripts/version_assets.py
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Test all three browser projects, record screenshots
+        run: npx playwright test tests/browser/lung-cancer.spec.cjs
+      - name: Upload screenshots and traces for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lung-cancer-visual-evidence
+          path: test-results/
+          retention-days: 30
