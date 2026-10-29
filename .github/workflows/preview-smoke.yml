@@ -1,0 +1,67 @@
+name: Isolated lung cancer preview smoke test
+on:
+  push:
+    branches: [preview-lung-cancer]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PREVIEW_ROOT: https://raw.githack.com/Pikirenia/tobacco_cessacion_map/preview-lung-cancer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Verify externally served HTML, CSS, JS, geographic data
+        run: |
+          set -euo pipefail
+          for asset in index.html assets/site.css assets/map.js data/lung-cancer-data.js data/world-topology.js feedback/index.html; do
+            echo "Checking $asset"
+            curl --fail --location --silent --show-error --retry 5 --retry-delay 5 --max-time 40 "$PREVIEW_ROOT/$asset" -o /tmp/preview-asset
+            test -s /tmp/preview-asset
+          done
+          curl --fail --location --silent --show-error --retry 5 --retry-delay 5 "$PREVIEW_ROOT/index.html" | grep -q 'TEST PREVIEW'
+      - name: Validate real desktop and mobile browser experience
+        run: |
+          node <<'JS'
+          const {chromium,devices,expect}=require('@playwright/test');
+          (async()=>{
+            const browser=await chromium.launch();
+            try {
+              for(const [name,options] of [['desktop',{}],['mobile',devices['iPhone 13']]]) {
+                const context=await browser.newContext(options);
+                await context.addCookies([{name:'__Http-phish',value:'1',domain:'raw.githack.com',path:'/Pikirenia/tobacco_cessacion_map/',httpOnly:true,secure:true,sameSite:'Lax'}]);
+                const page=await context.newPage();
+                const errors=[];page.on('pageerror',err=>errors.push(err.message));
+                const res=await page.goto(process.env.PREVIEW_ROOT+'/index.html',{waitUntil:'load',timeout:60000});
+                if(!res || !res.ok())throw Error(name+': page failed: '+res?.status());
+                await expect(page.getByText('TEST PREVIEW')).toBeVisible();
+                await expect(page.locator('#legend button').first()).toBeVisible({timeout:30000});
+                await page.locator('[data-mode="lung-cancer"]').click();
+                await expect(page.locator('#lungControls')).toBeVisible();
+                await expect(page.locator('#legend')).toContainText('100–149.9');
+                await page.locator('#lungSex').selectOption('female');
+                await expect(page.locator('#legend .n')).toHaveText(['141','36','15','3','0']);
+                await page.locator('#lungColorBy').selectOption('access');
+                await page.locator('#lungThresholds [data-cutoff="100"]').click();
+                await expect(page.locator('#lungMeta')).toContainText('≥100');
+                if(errors.length)throw Error(name+': browser errors: '+JSON.stringify(errors));
+                await page.screenshot({path:'preview-'+name+'.png',fullPage:false});
+                await context.close();
+              }
+            } finally {await browser.close()}
+          })().catch(err=>{console.error(err);process.exit(1)});
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: preview-live-smoke-screenshots
+          path: preview-*.png
+          retention-days: 14
